@@ -52,15 +52,13 @@ You can select specific rules using `GenericConstrainer`.
 ```rust
 use sql_rules::prelude::*;
 
-fn main() {
-    let mut constrainer = GenericConstrainer::<ParserDB>::default();
+let mut constrainer = GenericConstrainer::<ParserDB>::default();
 
-    // Register only specific rules
-    constrainer.register_table_rule(Box::new(SnakeCaseTableName::default()));
-    constrainer.register_column_rule(Box::new(LowercaseColumnName::default()));
+// Register only specific rules
+constrainer.register_table_rule(Box::new(SnakeCaseTableName::default()));
+constrainer.register_column_rule(Box::new(LowercaseColumnName::default()));
 
-    // Use the constrainer...
-}
+// Use the constrainer...
 ```
 
 ## Available Rules
