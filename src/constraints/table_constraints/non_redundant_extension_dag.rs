@@ -94,32 +94,6 @@ impl<DB: DatabaseLike + 'static> From<NonRedundantExtensionDag<DB>> for GenericC
 impl<DB: DatabaseLike> TableConstraint for NonRedundantExtensionDag<DB> {
     type Database = DB;
 
-    fn table_error_information(
-        &self,
-        _database: &Self::Database,
-        context: &<Self::Database as DatabaseLike>::Table,
-    ) -> Box<dyn crate::prelude::ConstraintFailureInformation> {
-        let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
-            .constraint("NonRedundantExtensionDag")
-            .unwrap()
-            .object(context.table_name().to_owned())
-            .unwrap()
-            .message(format!(
-                "Table '{}' has redundant extension structure (duplicate or transitive extensions)",
-                context.table_name()
-            ))
-            .unwrap()
-            .resolution(
-                "Remove redundant foreign key extensions. Ensure each extended table is distinct \
-                 and not reachable through another extension path."
-                    .to_string(),
-            )
-            .unwrap()
-            .try_into()
-            .unwrap();
-        error.into()
-    }
-
     fn validate_table(
         &self,
         database: &Self::Database,
@@ -138,9 +112,25 @@ impl<DB: DatabaseLike> TableConstraint for NonRedundantExtensionDag<DB> {
                 if other_extended_table.is_descendant_of(database, extended_table)
                     || extended_table == other_extended_table
                 {
-                    return Err(crate::error::Error::Table(
-                        self.table_error_information(database, table),
-                    ));
+                    let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
+                        .constraint("NonRedundantExtensionDag")
+                        .unwrap()
+                        .object(table.table_name().to_owned())
+                        .unwrap()
+                        .message(format!(
+                            "Table '{}' has redundant extension structure (duplicate or transitive extensions)",
+                            table.table_name()
+                        ))
+                        .unwrap()
+                        .resolution(
+                            "Remove redundant foreign key extensions. Ensure each extended table is distinct \
+                             and not reachable through another extension path."
+                                .to_string(),
+                        )
+                        .unwrap()
+                        .try_into()
+                        .unwrap();
+                    return Err(crate::error::Error::Table(error.into()));
                 }
             }
         }

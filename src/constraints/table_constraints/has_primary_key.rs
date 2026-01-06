@@ -46,28 +46,6 @@ impl<DB: DatabaseLike + 'static> From<HasPrimaryKey<DB>> for GenericConstrainer<
 impl<DB: DatabaseLike> TableConstraint for HasPrimaryKey<DB> {
     type Database = DB;
 
-    fn table_error_information(
-        &self,
-        _database: &Self::Database,
-        context: &<Self::Database as DatabaseLike>::Table,
-    ) -> Box<dyn crate::prelude::ConstraintFailureInformation> {
-        let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
-            .constraint("HasPrimaryKey")
-            .unwrap()
-            .object(context.table_name().to_owned())
-            .unwrap()
-            .message(format!(
-                "Table '{}' does not have a primary key",
-                context.table_name()
-            ))
-            .unwrap()
-            .resolution("Add a primary key to the table".to_string())
-            .unwrap()
-            .try_into()
-            .unwrap();
-        error.into()
-    }
-
     fn validate_table(
         &self,
         database: &Self::Database,
@@ -76,9 +54,21 @@ impl<DB: DatabaseLike> TableConstraint for HasPrimaryKey<DB> {
         if table.has_primary_key(database) {
             Ok(())
         } else {
-            Err(crate::error::Error::Table(
-                self.table_error_information(database, table),
-            ))
+            let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
+                .constraint("HasPrimaryKey")
+                .unwrap()
+                .object(table.table_name().to_owned())
+                .unwrap()
+                .message(format!(
+                    "Table '{}' does not have a primary key",
+                    table.table_name()
+                ))
+                .unwrap()
+                .resolution("Add a primary key to the table".to_string())
+                .unwrap()
+                .try_into()
+                .unwrap();
+            Err(crate::error::Error::Table(error.into()))
         }
     }
 }

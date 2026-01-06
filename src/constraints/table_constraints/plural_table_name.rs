@@ -77,43 +77,9 @@ impl<DB: DatabaseLike + 'static> From<PluralTableName<DB>> for GenericConstraine
 impl<DB: DatabaseLike> TableConstraint for PluralTableName<DB> {
     type Database = DB;
 
-    fn table_error_information(
-        &self,
-        _database: &Self::Database,
-        context: &<Self::Database as DatabaseLike>::Table,
-    ) -> Box<dyn crate::prelude::ConstraintFailureInformation> {
-        let table_name = context.table_name();
-        let last_segment = table_name.split('_').next_back().unwrap_or(table_name);
-        let expected_plural = pluralize(last_segment);
-
-        let expected_name = if table_name.contains('_') {
-            let prefix = &table_name[..table_name.rfind('_').unwrap()];
-            format!("{}_{}", prefix, &expected_plural)
-        } else {
-            expected_plural.clone()
-        };
-
-        let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
-            .constraint("PluralTableName")
-            .unwrap()
-            .object(table_name.to_owned())
-            .unwrap()
-            .message(format!(
-                "Table '{table_name}' violates plural naming convention: the last segment '{last_segment}' is singular, not plural"
-            ))
-            .unwrap()
-            .resolution(format!(
-                "Change '{table_name}' to '{expected_name}' (pluralize the last segment from '{last_segment}' to '{expected_plural}')"
-            ))
-            .unwrap()
-            .try_into()
-            .unwrap();
-        error.into()
-    }
-
     fn validate_table(
         &self,
-        database: &Self::Database,
+        _database: &Self::Database,
         table: &<Self::Database as DatabaseLike>::Table,
     ) -> Result<(), crate::error::Error> {
         let table_name = table.table_name();
@@ -126,9 +92,30 @@ impl<DB: DatabaseLike> TableConstraint for PluralTableName<DB> {
         if pluralized == last_segment {
             Ok(())
         } else {
-            Err(crate::error::Error::Table(
-                self.table_error_information(database, table),
-            ))
+            let expected_plural = pluralized;
+            let expected_name = if table_name.contains('_') {
+                let prefix = &table_name[..table_name.rfind('_').unwrap()];
+                format!("{}_{}", prefix, &expected_plural)
+            } else {
+                expected_plural.clone()
+            };
+
+            let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
+                .constraint("PluralTableName")
+                .unwrap()
+                .object(table_name.to_owned())
+                .unwrap()
+                .message(format!(
+                    "Table '{table_name}' violates plural naming convention: the last segment '{last_segment}' is singular, not plural"
+                ))
+                .unwrap()
+                .resolution(format!(
+                    "Change '{table_name}' to '{expected_name}' (pluralize the last segment from '{last_segment}' to '{expected_plural}')"
+                ))
+                .unwrap()
+                .try_into()
+                .unwrap();
+            Err(crate::error::Error::Table(error.into()))
         }
     }
 }

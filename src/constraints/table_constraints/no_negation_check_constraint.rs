@@ -71,37 +71,6 @@ impl<DB: DatabaseLike + 'static> From<NoNegationCheckConstraint<DB>> for Generic
 impl<DB: DatabaseLike> TableConstraint for NoNegationCheckConstraint<DB> {
     type Database = DB;
 
-    fn table_error_information(
-        &self,
-        database: &Self::Database,
-        context: &<Self::Database as DatabaseLike>::Table,
-    ) -> Box<dyn crate::prelude::ConstraintFailureInformation> {
-        let table_name = context.table_name();
-
-        // Find the first negation check constraint
-        let negation_constraint = context
-            .check_constraints(database)
-            .find(|cc| cc.is_negation(database))
-            .map(|cc| cc.expression(database).to_string())
-            .unwrap_or_else(|| "unknown".to_string());
-
-        let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
-            .constraint("NoNegationCheckConstraint")
-            .unwrap()
-            .object(table_name.to_owned())
-            .unwrap()
-            .message(format!(
-                "Table '{}' has a negation check constraint: CHECK ({})",
-                table_name, negation_constraint
-            ))
-            .unwrap()
-            .resolution("Remove the negation check constraint.".to_string())
-            .unwrap()
-            .try_into()
-            .unwrap();
-        error.into()
-    }
-
     fn validate_table(
         &self,
         database: &Self::Database,
@@ -111,9 +80,30 @@ impl<DB: DatabaseLike> TableConstraint for NoNegationCheckConstraint<DB> {
             .check_constraints(database)
             .any(|cc| cc.is_negation(database))
         {
-            return Err(crate::error::Error::Table(
-                self.table_error_information(database, table),
-            ));
+            let table_name = table.table_name();
+
+            // Find the first negation check constraint
+            let negation_constraint = table
+                .check_constraints(database)
+                .find(|cc| cc.is_negation(database))
+                .map(|cc| cc.expression(database).to_string())
+                .unwrap_or_else(|| "unknown".to_string());
+
+            let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
+                .constraint("NoNegationCheckConstraint")
+                .unwrap()
+                .object(table_name.to_owned())
+                .unwrap()
+                .message(format!(
+                    "Table '{}' has a negation check constraint: CHECK ({})",
+                    table_name, negation_constraint
+                ))
+                .unwrap()
+                .resolution("Remove the negation check constraint.".to_string())
+                .unwrap()
+                .try_into()
+                .unwrap();
+            return Err(crate::error::Error::Table(error.into()));
         }
         Ok(())
     }

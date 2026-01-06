@@ -44,34 +44,6 @@ impl<DB: DatabaseLike + 'static> From<LowercaseColumnName<DB::Column>> for Gener
 
 impl<C: ColumnLike> ColumnConstraint for LowercaseColumnName<C> {
     type Column = C;
-    fn column_error_information(
-        &self,
-        database: &<Self::Column as ColumnLike>::DB,
-        column: &Self::Column,
-    ) -> Box<dyn crate::prelude::ConstraintFailureInformation> {
-        let table = column.table(database);
-        let table_name = table.table_name();
-        let column_name = column.column_name();
-
-        let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
-            .constraint("LowercaseColumnName")
-            .unwrap()
-            .object(format!("{}.{}", table_name, column_name))
-            .unwrap()
-            .message(format!(
-                "Column '{}' in table '{}' is not lowercase",
-                column_name, table_name
-            ))
-            .unwrap()
-            .resolution(format!(
-                "Rename column '{}' in table '{}' to be all lowercase",
-                column_name, table_name
-            ))
-            .unwrap()
-            .try_into()
-            .unwrap();
-        error.into()
-    }
 
     fn validate_column(
         &self,
@@ -85,9 +57,28 @@ impl<C: ColumnLike> ColumnConstraint for LowercaseColumnName<C> {
         {
             Ok(())
         } else {
-            Err(crate::error::Error::Column(
-                self.column_error_information(database, column),
-            ))
+            let table = column.table(database);
+            let table_name = table.table_name();
+            let column_name = column.column_name();
+
+            let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
+                .constraint("LowercaseColumnName")
+                .unwrap()
+                .object(format!("{}.{}", table_name, column_name))
+                .unwrap()
+                .message(format!(
+                    "Column '{}' in table '{}' is not lowercase",
+                    column_name, table_name
+                ))
+                .unwrap()
+                .resolution(format!(
+                    "Rename column '{}' in table '{}' to be all lowercase",
+                    column_name, table_name
+                ))
+                .unwrap()
+                .try_into()
+                .unwrap();
+            Err(crate::error::Error::Column(error.into()))
         }
     }
 }

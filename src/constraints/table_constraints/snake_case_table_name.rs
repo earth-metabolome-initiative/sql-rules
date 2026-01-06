@@ -62,45 +62,9 @@ impl<DB: DatabaseLike + 'static> From<SnakeCaseTableName<DB>> for GenericConstra
 impl<DB: DatabaseLike> TableConstraint for SnakeCaseTableName<DB> {
     type Database = DB;
 
-    fn table_error_information(
-        &self,
-        _database: &Self::Database,
-        context: &<Self::Database as DatabaseLike>::Table,
-    ) -> Box<dyn crate::prelude::ConstraintFailureInformation> {
-        let table_name = context.table_name();
-        let expected_name = table_name.to_snake_case();
-
-        let issue = if table_name.contains("__") {
-            "contains double underscores"
-        } else if table_name.chars().any(|c| c.is_ascii_uppercase()) {
-            "contains uppercase letters"
-        } else if table_name != expected_name {
-            "does not follow snake_case convention"
-        } else {
-            "is not valid snake_case"
-        };
-
-        let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
-            .constraint("SnakeCaseTableName")
-            .unwrap()
-            .object(table_name.to_owned())
-            .unwrap()
-            .message(format!(
-                "Table '{table_name}' violates snake_case naming convention: {issue}"
-            ))
-            .unwrap()
-            .resolution(format!(
-                "Change '{table_name}' to '{expected_name}' (use lowercase letters and single underscores only)"
-            ))
-            .unwrap()
-            .try_into()
-            .unwrap();
-        error.into()
-    }
-
     fn validate_table(
         &self,
-        database: &Self::Database,
+        _database: &Self::Database,
         table: &<Self::Database as DatabaseLike>::Table,
     ) -> Result<(), crate::error::Error> {
         let table_name = table.table_name();
@@ -110,9 +74,32 @@ impl<DB: DatabaseLike> TableConstraint for SnakeCaseTableName<DB> {
         if expected_name == table_name {
             Ok(())
         } else {
-            Err(crate::error::Error::Table(
-                self.table_error_information(database, table),
-            ))
+            let issue = if table_name.contains("__") {
+                "contains double underscores"
+            } else if table_name.chars().any(|c| c.is_ascii_uppercase()) {
+                "contains uppercase letters"
+            } else if table_name != expected_name {
+                "does not follow snake_case convention"
+            } else {
+                "is not valid snake_case"
+            };
+
+            let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
+                .constraint("SnakeCaseTableName")
+                .unwrap()
+                .object(table_name.to_owned())
+                .unwrap()
+                .message(format!(
+                    "Table '{table_name}' violates snake_case naming convention: {issue}"
+                ))
+                .unwrap()
+                .resolution(format!(
+                    "Change '{table_name}' to '{expected_name}' (use lowercase letters and single underscores only)"
+                ))
+                .unwrap()
+                .try_into()
+                .unwrap();
+            Err(crate::error::Error::Table(error.into()))
         }
     }
 }

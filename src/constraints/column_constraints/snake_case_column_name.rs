@@ -64,44 +64,6 @@ impl<DB: DatabaseLike + 'static> From<SnakeCaseColumnName<DB::Column>> for Gener
 impl<C: ColumnLike> ColumnConstraint for SnakeCaseColumnName<C> {
     type Column = C;
 
-    fn column_error_information(
-        &self,
-        database: &<Self::Column as ColumnLike>::DB,
-        column: &Self::Column,
-    ) -> Box<dyn crate::prelude::ConstraintFailureInformation> {
-        let table = column.table(database);
-        let table_name = table.table_name();
-        let column_name = column.column_name();
-        let expected_name = column_name.to_snake_case();
-
-        let issue = if column_name.contains("__") {
-            "contains double underscores"
-        } else if column_name.chars().any(|c| c.is_ascii_uppercase()) {
-            "contains uppercase letters"
-        } else if column_name != expected_name {
-            "does not follow snake_case convention"
-        } else {
-            "is not valid snake_case"
-        };
-
-        let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
-            .constraint("SnakeCaseColumnName")
-            .unwrap()
-            .object(format!("{}.{}", table_name, column_name))
-            .unwrap()
-            .message(format!(
-                "Column '{column_name}' in table '{table_name}' violates snake_case naming convention: {issue}"
-            ))
-            .unwrap()
-            .resolution(format!(
-                "Change '{column_name}' to '{expected_name}' in table '{table_name}' (use lowercase letters and single underscores only)"
-            ))
-            .unwrap()
-            .try_into()
-            .unwrap();
-        error.into()
-    }
-
     fn validate_column(
         &self,
         database: &<Self::Column as ColumnLike>::DB,
@@ -114,9 +76,36 @@ impl<C: ColumnLike> ColumnConstraint for SnakeCaseColumnName<C> {
         if snake_cased == column_name {
             Ok(())
         } else {
-            Err(crate::error::Error::Column(
-                self.column_error_information(database, column),
-            ))
+            let table = column.table(database);
+            let table_name = table.table_name();
+            let expected_name = snake_cased;
+
+            let issue = if column_name.contains("__") {
+                "contains double underscores"
+            } else if column_name.chars().any(|c| c.is_ascii_uppercase()) {
+                "contains uppercase letters"
+            } else if column_name != expected_name {
+                "does not follow snake_case convention"
+            } else {
+                "is not valid snake_case"
+            };
+
+            let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
+                .constraint("SnakeCaseColumnName")
+                .unwrap()
+                .object(format!("{}.{}", table_name, column_name))
+                .unwrap()
+                .message(format!(
+                    "Column '{column_name}' in table '{table_name}' violates snake_case naming convention: {issue}"
+                ))
+                .unwrap()
+                .resolution(format!(
+                    "Change '{column_name}' to '{expected_name}' in table '{table_name}' (use lowercase letters and single underscores only)"
+                ))
+                .unwrap()
+                .try_into()
+                .unwrap();
+            Err(crate::error::Error::Column(error.into()))
         }
     }
 }

@@ -77,42 +77,6 @@ impl<DB: DatabaseLike + 'static> From<SingularColumnName<DB::Column>> for Generi
 impl<C: ColumnLike> ColumnConstraint for SingularColumnName<C> {
     type Column = C;
 
-    fn column_error_information(
-        &self,
-        database: &<Self::Column as ColumnLike>::DB,
-        column: &Self::Column,
-    ) -> Box<dyn crate::prelude::ConstraintFailureInformation> {
-        let table = column.table(database);
-        let table_name = table.table_name();
-        let column_name = column.column_name();
-        let last_segment = column_name.split('_').next_back().unwrap_or(column_name);
-        let expected_singular = singularize(last_segment);
-
-        let expected_name = if column_name.contains('_') {
-            let prefix = &column_name[..column_name.rfind('_').unwrap()];
-            format!("{}_{}", prefix, &expected_singular)
-        } else {
-            expected_singular.clone()
-        };
-
-        let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
-            .constraint("SingularColumnName")
-            .unwrap()
-            .object(format!("{}.{}", table_name, column_name))
-            .unwrap()
-            .message(format!(
-                "Column '{column_name}' in table '{table_name}' violates singular naming convention: the last segment '{last_segment}' is plural, not singular"
-            ))
-            .unwrap()
-            .resolution(format!(
-                "Change '{column_name}' to '{expected_name}' in table '{table_name}' (singularize the last segment from '{last_segment}' to '{expected_singular}')"
-            ))
-            .unwrap()
-            .try_into()
-            .unwrap();
-        error.into()
-    }
-
     fn validate_column(
         &self,
         database: &<Self::Column as ColumnLike>::DB,
@@ -128,9 +92,31 @@ impl<C: ColumnLike> ColumnConstraint for SingularColumnName<C> {
         if singularized == last_segment {
             Ok(())
         } else {
-            Err(crate::error::Error::Column(
-                self.column_error_information(database, column),
-            ))
+            let table = column.table(database);
+            let table_name = table.table_name();
+            let expected_name = if column_name.contains('_') {
+                let prefix = &column_name[..column_name.rfind('_').unwrap()];
+                format!("{}_{}", prefix, &singularized)
+            } else {
+                singularized.clone()
+            };
+
+            let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
+                .constraint("SingularColumnName")
+                .unwrap()
+                .object(format!("{}.{}", table_name, column_name))
+                .unwrap()
+                .message(format!(
+                    "Column '{column_name}' in table '{table_name}' violates singular naming convention: the last segment '{last_segment}' is plural, not singular"
+                ))
+                .unwrap()
+                .resolution(format!(
+                    "Change '{column_name}' to '{expected_name}' in table '{table_name}' (singularize the last segment from '{last_segment}' to '{singularized}')"
+                ))
+                .unwrap()
+                .try_into()
+                .unwrap();
+            Err(crate::error::Error::Column(error.into()))
         }
     }
 }

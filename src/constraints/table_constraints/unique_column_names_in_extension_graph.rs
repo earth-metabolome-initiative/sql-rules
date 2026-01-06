@@ -166,57 +166,6 @@ impl<DB: DatabaseLike> UniqueColumnNamesInExtensionGraph<DB> {
 impl<DB: DatabaseLike> TableConstraint for UniqueColumnNamesInExtensionGraph<DB> {
     type Database = DB;
 
-    fn table_error_information(
-        &self,
-        database: &Self::Database,
-        context: &<Self::Database as DatabaseLike>::Table,
-    ) -> Box<dyn crate::prelude::ConstraintFailureInformation> {
-        // Compute duplicates using the database context for a detailed error message
-        let duplicates = Self::find_duplicate_columns(database, context);
-
-        let (message, resolution) = if duplicates.is_empty() {
-            // Fallback for generic case
-            (
-                format!(
-                    "Table '{}' has duplicate column name(s) in its extension hierarchy",
-                    context.table_name()
-                ),
-                format!(
-                    "Ensure all columns in table '{}' have unique names that don't conflict with any parent table columns (excluding primary key columns)",
-                    context.table_name()
-                ),
-            )
-        } else {
-            let duplicate_list = duplicates.join(", ");
-            (
-                format!(
-                    "Table '{}' has {} duplicate column name(s) that conflict with parent tables: {}",
-                    context.table_name(),
-                    duplicates.len(),
-                    duplicate_list
-                ),
-                format!(
-                    "Rename these columns in table '{}': [{}]. Each column must have a unique name across all parent tables in the extension hierarchy",
-                    context.table_name(),
-                    duplicate_list
-                ),
-            )
-        };
-
-        let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
-            .constraint("UniqueColumnNamesInExtensionGraph")
-            .unwrap()
-            .object(context.table_name().to_owned())
-            .unwrap()
-            .message(message)
-            .unwrap()
-            .resolution(resolution)
-            .unwrap()
-            .try_into()
-            .unwrap();
-        error.into()
-    }
-
     fn validate_table(
         &self,
         database: &Self::Database,

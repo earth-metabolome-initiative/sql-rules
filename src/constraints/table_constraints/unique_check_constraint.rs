@@ -49,28 +49,6 @@ impl<DB: DatabaseLike + 'static> From<UniqueCheckConstraint<DB>> for GenericCons
 impl<DB: DatabaseLike> TableConstraint for UniqueCheckConstraint<DB> {
     type Database = DB;
 
-    fn table_error_information(
-        &self,
-        _database: &Self::Database,
-        context: &<Self::Database as DatabaseLike>::Table,
-    ) -> Box<dyn crate::prelude::ConstraintFailureInformation> {
-        let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
-            .constraint("UniqueCheckConstraint")
-            .unwrap()
-            .object(context.table_name().to_owned())
-            .unwrap()
-            .message(format!(
-                "Table '{}' has non-unique check constraints",
-                context.table_name()
-            ))
-            .unwrap()
-            .resolution("Ensure all check constraints in the table are unique".to_string())
-            .unwrap()
-            .try_into()
-            .unwrap();
-        error.into()
-    }
-
     fn validate_table(
         &self,
         database: &Self::Database,
@@ -80,9 +58,21 @@ impl<DB: DatabaseLike> TableConstraint for UniqueCheckConstraint<DB> {
         constraints.sort_unstable_by_key(|c| c.expression(database));
         for window in constraints.windows(2) {
             if window[0].expression(database) == window[1].expression(database) {
-                return Err(crate::error::Error::Table(
-                    self.table_error_information(database, table),
-                ));
+                let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
+                    .constraint("UniqueCheckConstraint")
+                    .unwrap()
+                    .object(table.table_name().to_owned())
+                    .unwrap()
+                    .message(format!(
+                        "Table '{}' has non-unique check constraints",
+                        table.table_name()
+                    ))
+                    .unwrap()
+                    .resolution("Ensure all check constraints in the table are unique".to_string())
+                    .unwrap()
+                    .try_into()
+                    .unwrap();
+                return Err(crate::error::Error::Table(error.into()));
             }
         }
         Ok(())

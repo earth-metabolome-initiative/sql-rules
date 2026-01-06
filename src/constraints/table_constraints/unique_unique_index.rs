@@ -47,28 +47,6 @@ impl<DB: DatabaseLike + 'static> From<UniqueUniqueIndex<DB>> for GenericConstrai
 impl<DB: DatabaseLike> TableConstraint for UniqueUniqueIndex<DB> {
     type Database = DB;
 
-    fn table_error_information(
-        &self,
-        _database: &Self::Database,
-        context: &<Self::Database as DatabaseLike>::Table,
-    ) -> Box<dyn crate::prelude::ConstraintFailureInformation> {
-        let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
-            .constraint("UniqueUniqueIndex")
-            .unwrap()
-            .object(context.table_name().to_owned())
-            .unwrap()
-            .message(format!(
-                "Table '{}' has non-unique unique index",
-                context.table_name()
-            ))
-            .unwrap()
-            .resolution("Ensure all unique index in the table are unique".to_string())
-            .unwrap()
-            .try_into()
-            .unwrap();
-        error.into()
-    }
-
     fn validate_table(
         &self,
         database: &Self::Database,

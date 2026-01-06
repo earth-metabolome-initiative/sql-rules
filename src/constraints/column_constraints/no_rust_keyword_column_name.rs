@@ -49,33 +49,6 @@ impl<DB: DatabaseLike + 'static> From<NoRustKeywordColumnName<DB::Column>>
 impl<C: ColumnLike> ColumnConstraint for NoRustKeywordColumnName<C> {
     type Column = C;
 
-    fn column_error_information(
-        &self,
-        _database: &<Self::Column as ColumnLike>::DB,
-        context: &Self::Column,
-    ) -> Box<dyn crate::prelude::ConstraintFailureInformation> {
-        let column_name = context.column_name();
-        let table_name = context.table(_database).table_name();
-        let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
-            .constraint("NoRustKeywordColumnName")
-            .unwrap()
-            .object(format!("{}.{}", table_name, column_name))
-            .unwrap()
-            .message(format!(
-                "Column name '{}' in table '{}' is a Rust keyword.",
-                column_name, table_name
-            ))
-            .unwrap()
-            .resolution(format!(
-                "Rename the column '{}' to something that is not a Rust keyword.",
-                column_name
-            ))
-            .unwrap()
-            .try_into()
-            .unwrap();
-        error.into()
-    }
-
     fn validate_column(
         &self,
         _database: &<Self::Column as ColumnLike>::DB,
@@ -83,9 +56,25 @@ impl<C: ColumnLike> ColumnConstraint for NoRustKeywordColumnName<C> {
     ) -> Result<(), crate::error::Error> {
         let column_name = column.column_name();
         if is_rust_keyword(column_name) {
-            return Err(crate::error::Error::Column(
-                self.column_error_information(_database, column),
-            ));
+            let table_name = column.table(_database).table_name();
+            let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
+                .constraint("NoRustKeywordColumnName")
+                .unwrap()
+                .object(format!("{}.{}", table_name, column_name))
+                .unwrap()
+                .message(format!(
+                    "Column name '{}' in table '{}' is a Rust keyword.",
+                    column_name, table_name
+                ))
+                .unwrap()
+                .resolution(format!(
+                    "Rename the column '{}' to something that is not a Rust keyword.",
+                    column_name
+                ))
+                .unwrap()
+                .try_into()
+                .unwrap();
+            return Err(crate::error::Error::Column(error.into()));
         }
         Ok(())
     }

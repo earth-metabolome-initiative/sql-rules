@@ -73,40 +73,6 @@ impl<DB: DatabaseLike + 'static> From<NoTautologicalCheckConstraint<DB>>
 impl<DB: DatabaseLike> TableConstraint for NoTautologicalCheckConstraint<DB> {
     type Database = DB;
 
-    fn table_error_information(
-        &self,
-        database: &Self::Database,
-        context: &<Self::Database as DatabaseLike>::Table,
-    ) -> Box<dyn crate::prelude::ConstraintFailureInformation> {
-        let table_name = context.table_name();
-
-        // Find the first tautological check constraint
-        let tautological_constraint = context
-            .check_constraints(database)
-            .find(|cc| cc.is_tautology(database))
-            .map(|cc| cc.expression(database).to_string())
-            .unwrap_or_else(|| "unknown".to_string());
-
-        let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
-            .constraint("NoTautologicalCheckConstraint")
-            .unwrap()
-            .object(table_name.to_owned())
-            .unwrap()
-            .message(format!(
-                "Table '{}' has a tautological check constraint: CHECK ({})",
-                table_name, tautological_constraint
-            ))
-            .unwrap()
-            .resolution(format!(
-                "Remove the tautological check constraint 'CHECK ({})' from table '{}'",
-                tautological_constraint, table_name
-            ))
-            .unwrap()
-            .try_into()
-            .unwrap();
-        error.into()
-    }
-
     fn validate_table(
         &self,
         database: &Self::Database,
@@ -115,9 +81,33 @@ impl<DB: DatabaseLike> TableConstraint for NoTautologicalCheckConstraint<DB> {
         // Check if any check constraint is tautological
         for check_constraint in table.check_constraints(database) {
             if check_constraint.is_tautology(database) {
-                return Err(crate::error::Error::Table(
-                    self.table_error_information(database, table),
-                ));
+                let table_name = table.table_name();
+
+                // Find the first tautological check constraint
+                let tautological_constraint = table
+                    .check_constraints(database)
+                    .find(|cc| cc.is_tautology(database))
+                    .map(|cc| cc.expression(database).to_string())
+                    .unwrap_or_else(|| "unknown".to_string());
+
+                let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
+                    .constraint("NoTautologicalCheckConstraint")
+                    .unwrap()
+                    .object(table_name.to_owned())
+                    .unwrap()
+                    .message(format!(
+                        "Table '{}' has a tautological check constraint: CHECK ({})",
+                        table_name, tautological_constraint
+                    ))
+                    .unwrap()
+                    .resolution(format!(
+                        "Remove the tautological check constraint 'CHECK ({})' from table '{}'",
+                        tautological_constraint, table_name
+                    ))
+                    .unwrap()
+                    .try_into()
+                    .unwrap();
+                return Err(crate::error::Error::Table(error.into()));
             }
         }
 

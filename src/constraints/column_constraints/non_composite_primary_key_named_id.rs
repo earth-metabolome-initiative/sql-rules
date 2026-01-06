@@ -58,35 +58,6 @@ impl<DB: DatabaseLike + 'static> From<NonCompositePrimaryKeyNamedId<DB::Column>>
 impl<C: ColumnLike> ColumnConstraint for NonCompositePrimaryKeyNamedId<C> {
     type Column = C;
 
-    fn column_error_information(
-        &self,
-        database: &<Self::Column as ColumnLike>::DB,
-        column: &Self::Column,
-    ) -> Box<dyn crate::prelude::ConstraintFailureInformation> {
-        let column_name = column.column_name();
-        let table = column.table(database);
-        let table_name = table.table_name();
-
-        let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
-            .constraint("NonCompositePrimaryKeyNamedId")
-            .unwrap()
-            .object(format!("{}.{}", table_name, column_name))
-            .unwrap()
-            .message(format!(
-                "Column '{}' in table '{}' is a non-composite primary key but is not named 'id'",
-                column_name, table_name
-            ))
-            .unwrap()
-            .resolution(format!(
-                "Rename the primary key column '{}' to 'id' in table '{}'",
-                column_name, table_name
-            ))
-            .unwrap()
-            .try_into()
-            .unwrap();
-        error.into()
-    }
-
     fn validate_column(
         &self,
         database: &<Self::Column as ColumnLike>::DB,
@@ -110,9 +81,27 @@ impl<C: ColumnLike> ColumnConstraint for NonCompositePrimaryKeyNamedId<C> {
         if column.column_name() == "id" {
             Ok(())
         } else {
-            Err(crate::error::Error::Column(
-                self.column_error_information(database, column),
-            ))
+            let column_name = column.column_name();
+            let table_name = table.table_name();
+
+            let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
+                .constraint("NonCompositePrimaryKeyNamedId")
+                .unwrap()
+                .object(format!("{}.{}", table_name, column_name))
+                .unwrap()
+                .message(format!(
+                    "Column '{}' in table '{}' is a non-composite primary key but is not named 'id'",
+                    column_name, table_name
+                ))
+                .unwrap()
+                .resolution(format!(
+                    "Rename the primary key column '{}' to 'id' in table '{}'",
+                    column_name, table_name
+                ))
+                .unwrap()
+                .try_into()
+                .unwrap();
+            Err(crate::error::Error::Column(error.into()))
         }
     }
 }

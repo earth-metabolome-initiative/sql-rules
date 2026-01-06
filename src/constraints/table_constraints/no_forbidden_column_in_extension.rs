@@ -118,40 +118,6 @@ impl<DB: DatabaseLike + 'static> From<NoForbiddenColumnInExtension<DB>> for Gene
 impl<DB: DatabaseLike> TableConstraint for NoForbiddenColumnInExtension<DB> {
     type Database = DB;
 
-    fn table_error_information(
-        &self,
-        database: &Self::Database,
-        context: &<Self::Database as DatabaseLike>::Table,
-    ) -> Box<dyn crate::prelude::ConstraintFailureInformation> {
-        let table_name = context.table_name();
-        let extended_table_names = context
-            .extended_tables(database)
-            .map(|t| t.table_name())
-            .collect::<Vec<_>>();
-
-        let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
-            .constraint("NoForbiddenColumnInExtension")
-            .unwrap()
-            .object(table_name.to_owned())
-            .unwrap()
-            .message(format!(
-                "Table '{}' extends {} ({}) but has a forbidden column named '{}'",
-                table_name,
-                if extended_table_names.len() == 1 { "table" } else { "tables" },
-                extended_table_names.join(", "),
-                self.forbidden_name
-            ))
-            .unwrap()
-            .resolution(format!(
-                "Rename or remove the '{}' column from table '{}' (extension tables should not define this column)",
-                self.forbidden_name, table_name
-            ))
-            .unwrap()
-            .try_into()
-            .unwrap();
-        error.into()
-    }
-
     fn validate_table(
         &self,
         database: &Self::Database,
@@ -168,9 +134,33 @@ impl<DB: DatabaseLike> TableConstraint for NoForbiddenColumnInExtension<DB> {
         for column in table.columns(database) {
             let column_name_lower = column.column_name().to_lowercase();
             if column_name_lower == forbidden_name_lower {
-                return Err(crate::error::Error::Table(
-                    self.table_error_information(database, table),
-                ));
+                let table_name = table.table_name();
+                let extended_table_names = table
+                    .extended_tables(database)
+                    .map(|t| t.table_name())
+                    .collect::<Vec<_>>();
+
+                let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
+                    .constraint("NoForbiddenColumnInExtension")
+                    .unwrap()
+                    .object(table_name.to_owned())
+                    .unwrap()
+                    .message(format!(
+                        "Table '{}' extends {} ({}) but has a forbidden column named '{}'",
+                        table_name,
+                        if extended_table_names.len() == 1 { "table" } else { "tables" },
+                        extended_table_names.join(", "),
+                        self.forbidden_name
+                    ))
+                    .unwrap()
+                    .resolution(format!(
+                        "Rename or remove the '{}' column from table '{}' (extension tables should not define this column)",
+                        self.forbidden_name, table_name
+                    ))
+                    .unwrap()
+                    .try_into()
+                    .unwrap();
+                return Err(crate::error::Error::Table(error.into()));
             }
         }
 

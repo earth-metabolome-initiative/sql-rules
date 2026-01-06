@@ -47,29 +47,6 @@ impl<DB: DatabaseLike + 'static> From<NoRustKeywordTableName<DB>> for GenericCon
 impl<DB: DatabaseLike> TableConstraint for NoRustKeywordTableName<DB> {
     type Database = DB;
 
-    fn table_error_information(
-        &self,
-        _database: &Self::Database,
-        context: &<Self::Database as DatabaseLike>::Table,
-    ) -> Box<dyn crate::prelude::ConstraintFailureInformation> {
-        let table_name = context.table_name();
-        let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
-            .constraint("NoRustKeywordTableName")
-            .unwrap()
-            .object(table_name.to_owned())
-            .unwrap()
-            .message(format!("Table name '{}' is a Rust keyword.", table_name))
-            .unwrap()
-            .resolution(format!(
-                "Rename the table '{}' to something that is not a Rust keyword.",
-                table_name
-            ))
-            .unwrap()
-            .try_into()
-            .unwrap();
-        error.into()
-    }
-
     fn validate_table(
         &self,
         _database: &Self::Database,
@@ -77,9 +54,21 @@ impl<DB: DatabaseLike> TableConstraint for NoRustKeywordTableName<DB> {
     ) -> Result<(), crate::error::Error> {
         let table_name = table.table_name();
         if is_rust_keyword(table_name) {
-            return Err(crate::error::Error::Table(
-                self.table_error_information(_database, table),
-            ));
+            let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
+                .constraint("NoRustKeywordTableName")
+                .unwrap()
+                .object(table_name.to_owned())
+                .unwrap()
+                .message(format!("Table name '{}' is a Rust keyword.", table_name))
+                .unwrap()
+                .resolution(format!(
+                    "Rename the table '{}' to something that is not a Rust keyword.",
+                    table_name
+                ))
+                .unwrap()
+                .try_into()
+                .unwrap();
+            return Err(crate::error::Error::Table(error.into()));
         }
         Ok(())
     }

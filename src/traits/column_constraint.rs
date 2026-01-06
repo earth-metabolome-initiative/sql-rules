@@ -10,19 +10,6 @@ pub trait ColumnConstraint {
     /// The column type that this constraint applies to.
     type Column: ColumnLike;
 
-    /// Returns information about the failure of this constraint.
-    ///
-    /// # Arguments
-    ///
-    /// * `database` - A reference to the database instance to query additional
-    ///   information needed for the error message.
-    /// * `context` - The column that failed the constraint.
-    fn column_error_information(
-        &self,
-        database: &<Self::Column as ColumnLike>::DB,
-        context: &Self::Column,
-    ) -> Box<dyn crate::traits::ConstraintFailureInformation>;
-
     /// Validates that the given column satisfies the constraint.
     ///
     /// # Arguments
