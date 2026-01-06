@@ -3,17 +3,17 @@
 use sql_traits::traits::DatabaseLike;
 
 use crate::{
-    constraints::{
+    prelude::{
+        ExtensionForeignKeyOnDeleteCascade, NoNegationCheckRule, NoRustKeywordColumnName,
+        NoRustKeywordForeignKeyName, NoRustKeywordTableName, NoTautologicalCheckRule,
+        PrimaryKeyReferenceEndsWithId, ReferencesUniqueIndex,
+    },
+    rules::{
         CompatibleForeignKey, HasPrimaryKey, LowercaseColumnName, LowercaseForeignKeyName,
         LowercaseTableName, NoForbiddenColumnInExtension, NonCompositePrimaryKeyNamedId,
         NonRedundantExtensionDag, PluralTableName, SingularColumnName, SnakeCaseColumnName,
-        SnakeCaseTableName, UniqueCheckConstraint, UniqueColumnNamesInExtensionGraph,
-        UniqueForeignKey, UniqueUniqueIndex,
-    },
-    prelude::{
-        ExtensionForeignKeyOnDeleteCascade, NoNegationCheckConstraint, NoRustKeywordColumnName,
-        NoRustKeywordForeignKeyName, NoRustKeywordTableName, NoTautologicalCheckConstraint,
-        PrimaryKeyReferenceEndsWithId, ReferencesUniqueIndex,
+        SnakeCaseTableName, UniqueCheckRule, UniqueColumnNamesInExtensionGraph, UniqueForeignKey,
+        UniqueUniqueIndex,
     },
     traits::Constrainer,
 };
@@ -35,7 +35,7 @@ use crate::{
 ///   tables
 /// - [`NonRedundantExtensionDag`]: Ensures no redundant edges in extension
 ///   hierarchy
-/// - [`UniqueCheckConstraint`]: Ensures check constraint names are unique
+/// - [`UniqueCheckRule`]: Ensures check constraint names are unique
 /// - [`UniqueColumnNamesInExtensionGraph`]: Ensures column names are unique
 ///   across extension graphs
 /// - [`UniqueForeignKey`]: Ensures foreign key signatures are unique
@@ -74,41 +74,37 @@ where
         let mut constrainer = super::generic_constrainer::GenericConstrainer::default();
 
         // Register all table constraints
-        constrainer.register_table_constraint(Box::new(HasPrimaryKey::default()));
-        constrainer.register_table_constraint(Box::new(LowercaseTableName::default()));
-        constrainer.register_table_constraint(Box::new(SnakeCaseTableName::default()));
-        constrainer.register_table_constraint(Box::new(PluralTableName::default()));
-        constrainer.register_table_constraint(Box::new(NoRustKeywordTableName::default()));
-        constrainer.register_table_constraint(Box::new(NoTautologicalCheckConstraint::default()));
-        constrainer.register_table_constraint(Box::new(NoNegationCheckConstraint::default()));
-        constrainer.register_table_constraint(Box::new(NoForbiddenColumnInExtension::new(
+        constrainer.register_table_rule(Box::new(HasPrimaryKey::default()));
+        constrainer.register_table_rule(Box::new(LowercaseTableName::default()));
+        constrainer.register_table_rule(Box::new(SnakeCaseTableName::default()));
+        constrainer.register_table_rule(Box::new(PluralTableName::default()));
+        constrainer.register_table_rule(Box::new(NoRustKeywordTableName::default()));
+        constrainer.register_table_rule(Box::new(NoTautologicalCheckRule::default()));
+        constrainer.register_table_rule(Box::new(NoNegationCheckRule::default()));
+        constrainer.register_table_rule(Box::new(NoForbiddenColumnInExtension::new(
             "most_concrete_table",
         )));
-        constrainer.register_table_constraint(Box::new(NonRedundantExtensionDag::default()));
-        constrainer.register_table_constraint(Box::new(UniqueCheckConstraint::default()));
-        constrainer
-            .register_table_constraint(Box::new(UniqueColumnNamesInExtensionGraph::default()));
-        constrainer.register_table_constraint(Box::new(UniqueForeignKey::default()));
-        constrainer.register_table_constraint(Box::new(UniqueUniqueIndex::default()));
+        constrainer.register_table_rule(Box::new(NonRedundantExtensionDag::default()));
+        constrainer.register_table_rule(Box::new(UniqueCheckRule::default()));
+        constrainer.register_table_rule(Box::new(UniqueColumnNamesInExtensionGraph::default()));
+        constrainer.register_table_rule(Box::new(UniqueForeignKey::default()));
+        constrainer.register_table_rule(Box::new(UniqueUniqueIndex::default()));
 
         // Register all column constraints
-        constrainer.register_column_constraint(Box::new(LowercaseColumnName::default()));
-        constrainer.register_column_constraint(Box::new(NonCompositePrimaryKeyNamedId::default()));
-        constrainer.register_column_constraint(Box::new(SnakeCaseColumnName::default()));
-        constrainer.register_column_constraint(Box::new(SingularColumnName::default()));
-        constrainer.register_column_constraint(Box::new(NoRustKeywordColumnName::default()));
+        constrainer.register_column_rule(Box::new(LowercaseColumnName::default()));
+        constrainer.register_column_rule(Box::new(NonCompositePrimaryKeyNamedId::default()));
+        constrainer.register_column_rule(Box::new(SnakeCaseColumnName::default()));
+        constrainer.register_column_rule(Box::new(SingularColumnName::default()));
+        constrainer.register_column_rule(Box::new(NoRustKeywordColumnName::default()));
 
         // Register all foreign key constraints
-        constrainer.register_foreign_key_constraint(Box::new(CompatibleForeignKey::default()));
-        constrainer.register_foreign_key_constraint(Box::new(LowercaseForeignKeyName::default()));
-        constrainer.register_foreign_key_constraint(Box::new(ReferencesUniqueIndex::default()));
+        constrainer.register_foreign_key_rule(Box::new(CompatibleForeignKey::default()));
+        constrainer.register_foreign_key_rule(Box::new(LowercaseForeignKeyName::default()));
+        constrainer.register_foreign_key_rule(Box::new(ReferencesUniqueIndex::default()));
+        constrainer.register_foreign_key_rule(Box::new(PrimaryKeyReferenceEndsWithId::default()));
         constrainer
-            .register_foreign_key_constraint(Box::new(PrimaryKeyReferenceEndsWithId::default()));
-        constrainer.register_foreign_key_constraint(Box::new(
-            ExtensionForeignKeyOnDeleteCascade::default(),
-        ));
-        constrainer
-            .register_foreign_key_constraint(Box::new(NoRustKeywordForeignKeyName::default()));
+            .register_foreign_key_rule(Box::new(ExtensionForeignKeyOnDeleteCascade::default()));
+        constrainer.register_foreign_key_rule(Box::new(NoRustKeywordForeignKeyName::default()));
 
         Self { constrainer }
     }
@@ -120,49 +116,44 @@ where
 {
     type Database = DB;
 
-    fn table_constraints(
+    fn table_rules(
         &self,
-    ) -> impl Iterator<Item = &dyn crate::traits::TableConstraint<Database = Self::Database>> {
-        self.constrainer.table_constraints()
+    ) -> impl Iterator<Item = &dyn crate::traits::TableRule<Database = Self::Database>> {
+        self.constrainer.table_rules()
     }
 
-    fn column_constraints(
+    fn column_rules(
         &self,
     ) -> impl Iterator<
-        Item = &dyn crate::traits::ColumnConstraint<
-            Column = <Self::Database as DatabaseLike>::Column,
-        >,
+        Item = &dyn crate::traits::ColumnRule<Column = <Self::Database as DatabaseLike>::Column>,
     > {
-        self.constrainer.column_constraints()
+        self.constrainer.column_rules()
     }
 
-    fn foreign_key_constraints(
+    fn foreign_key_rules(
         &self,
-    ) -> impl Iterator<Item = &dyn crate::traits::ForeignKeyConstraint<Database = Self::Database>>
-    {
-        self.constrainer.foreign_key_constraints()
+    ) -> impl Iterator<Item = &dyn crate::traits::ForeignKeyRule<Database = Self::Database>> {
+        self.constrainer.foreign_key_rules()
     }
 
-    fn register_table_constraint(
+    fn register_table_rule(
         &mut self,
-        constraint: Box<dyn crate::traits::TableConstraint<Database = Self::Database>>,
+        rule: Box<dyn crate::traits::TableRule<Database = Self::Database>>,
     ) {
-        self.constrainer.register_table_constraint(constraint);
+        self.constrainer.register_table_rule(rule);
     }
 
-    fn register_column_constraint(
+    fn register_column_rule(
         &mut self,
-        constraint: Box<
-            dyn crate::traits::ColumnConstraint<Column = <Self::Database as DatabaseLike>::Column>,
-        >,
+        rule: Box<dyn crate::traits::ColumnRule<Column = <Self::Database as DatabaseLike>::Column>>,
     ) {
-        self.constrainer.register_column_constraint(constraint);
+        self.constrainer.register_column_rule(rule);
     }
 
-    fn register_foreign_key_constraint(
+    fn register_foreign_key_rule(
         &mut self,
-        constraint: Box<dyn crate::traits::ForeignKeyConstraint<Database = Self::Database>>,
+        rule: Box<dyn crate::traits::ForeignKeyRule<Database = Self::Database>>,
     ) {
-        self.constrainer.register_foreign_key_constraint(constraint);
+        self.constrainer.register_foreign_key_rule(rule);
     }
 }

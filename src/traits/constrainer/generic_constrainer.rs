@@ -4,14 +4,14 @@ use sql_traits::traits::DatabaseLike;
 
 use crate::traits::Constrainer;
 
-/// A generic constrainer that holds and applies table constraints.
+/// A generic constrainer that holds and applies table rules.
 pub struct GenericConstrainer<DB: DatabaseLike> {
-    /// The registered table constraints.
-    tables: Vec<Box<dyn crate::traits::TableConstraint<Database = DB>>>,
-    /// The registered column constraints.
-    columns: Vec<Box<dyn crate::traits::ColumnConstraint<Column = DB::Column>>>,
-    /// The registered foreign key constraints.
-    foreign_keys: Vec<Box<dyn crate::traits::ForeignKeyConstraint<Database = DB>>>,
+    /// The registered table rules.
+    tables: Vec<Box<dyn crate::traits::TableRule<Database = DB>>>,
+    /// The registered column rules.
+    columns: Vec<Box<dyn crate::traits::ColumnRule<Column = DB::Column>>>,
+    /// The registered foreign key rules.
+    foreign_keys: Vec<Box<dyn crate::traits::ForeignKeyRule<Database = DB>>>,
 }
 
 impl<DB: DatabaseLike> Default for GenericConstrainer<DB> {
@@ -27,49 +27,44 @@ impl<DB: DatabaseLike> Default for GenericConstrainer<DB> {
 impl<DB: DatabaseLike> Constrainer for GenericConstrainer<DB> {
     type Database = DB;
 
-    fn table_constraints(
+    fn table_rules(
         &self,
-    ) -> impl Iterator<Item = &dyn crate::traits::TableConstraint<Database = Self::Database>> {
+    ) -> impl Iterator<Item = &dyn crate::traits::TableRule<Database = Self::Database>> {
         self.tables.iter().map(AsRef::as_ref)
     }
 
-    fn column_constraints(
+    fn column_rules(
         &self,
     ) -> impl Iterator<
-        Item = &dyn crate::traits::ColumnConstraint<
-            Column = <Self::Database as DatabaseLike>::Column,
-        >,
+        Item = &dyn crate::traits::ColumnRule<Column = <Self::Database as DatabaseLike>::Column>,
     > {
         self.columns.iter().map(AsRef::as_ref)
     }
 
-    fn foreign_key_constraints(
+    fn foreign_key_rules(
         &self,
-    ) -> impl Iterator<Item = &dyn crate::traits::ForeignKeyConstraint<Database = Self::Database>>
-    {
+    ) -> impl Iterator<Item = &dyn crate::traits::ForeignKeyRule<Database = Self::Database>> {
         self.foreign_keys.iter().map(AsRef::as_ref)
     }
 
-    fn register_table_constraint(
+    fn register_table_rule(
         &mut self,
-        constraint: Box<dyn crate::traits::TableConstraint<Database = Self::Database>>,
+        rule: Box<dyn crate::traits::TableRule<Database = Self::Database>>,
     ) {
-        self.tables.push(constraint);
+        self.tables.push(rule);
     }
 
-    fn register_column_constraint(
+    fn register_column_rule(
         &mut self,
-        constraint: Box<
-            dyn crate::traits::ColumnConstraint<Column = <Self::Database as DatabaseLike>::Column>,
-        >,
+        rule: Box<dyn crate::traits::ColumnRule<Column = <Self::Database as DatabaseLike>::Column>>,
     ) {
-        self.columns.push(constraint);
+        self.columns.push(rule);
     }
 
-    fn register_foreign_key_constraint(
+    fn register_foreign_key_rule(
         &mut self,
-        constraint: Box<dyn crate::traits::ForeignKeyConstraint<Database = Self::Database>>,
+        rule: Box<dyn crate::traits::ForeignKeyRule<Database = Self::Database>>,
     ) {
-        self.foreign_keys.push(constraint);
+        self.foreign_keys.push(rule);
     }
 }

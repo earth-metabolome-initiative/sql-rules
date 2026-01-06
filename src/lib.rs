@@ -1,12 +1,12 @@
 #![doc = include_str!("../README.md")]
 
-pub mod constraints;
 pub mod error;
+pub mod rules;
 pub mod traits;
 
 /// Prelude module re-exporting commonly used items from the crate.
 pub mod prelude {
     pub use sql_traits::prelude::*;
 
-    pub use crate::{constraints::*, error::Error, traits::*};
+    pub use crate::{error::Error, rules::*, traits::*};
 }
