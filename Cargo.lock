@@ -276,22 +276,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0fda2ff0d084019ba4d7c6f371c95d8fd75ce3524c3cb8fb653a3023f6323e64"
 
 [[package]]
+name = "sql-rules"
+version = "0.1.0"
+dependencies = [
+ "heck",
+ "inflection-rs",
+ "sql-traits",
+ "thiserror",
+]
+
+[[package]]
 name = "sql-traits"
 version = "0.1.0"
 source = "git+https://github.com/earth-metabolome-initiative/sql-traits?branch=main#2e230b993be4c661db7e09d45717ba7e391d066e"
 dependencies = [
  "geometric-traits",
  "sqlparser",
- "thiserror",
-]
-
-[[package]]
-name = "sql_constraints"
-version = "0.1.0"
-dependencies = [
- "heck",
- "inflection-rs",
- "sql-traits",
  "thiserror",
 ]
 

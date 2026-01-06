@@ -1,14 +1,14 @@
 [package]
-name = "sql_constraints"
+name = "sql-rules"
 version = "0.1.0"
 edition = "2024"
 authors = ["Earth Metabolome Initiative"]
 license = "MIT"
-repository = "https://github.com/earth-metabolome-initiative/multi_ranged"
-description = "Efficient data structures for representing and manipulating ranges of discrete values"
+repository = "https://github.com/earth-metabolome-initiative/sql-rules"
+description = "Higher-level rules and validation for SQL schemas based on sql-traits"
 readme = "README.md"
-keywords = ["range", "intervals", "data-structures", "numeric", "collections"]
-categories = ["data-structures", "mathematics"]
+keywords = ["sql", "schema", "validation", "rules", "linter"]
+categories = ["database", "development-tools"]
 
 [dependencies]
 sql-traits = { git = "https://github.com/earth-metabolome-initiative/sql-traits", branch = "main" }
