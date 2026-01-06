@@ -10,6 +10,34 @@ use crate::traits::RuleFailureInformation;
 #[derive(Debug)]
 /// Struct implementing `RuleFailureInformation` for detailed error
 /// reporting.
+///
+/// # Example
+///
+/// ```rust
+/// use sql_rules::error::RuleErrorInfo;
+/// use sql_rules::traits::RuleFailureInformation;
+///
+/// let error_info: RuleErrorInfo = RuleErrorInfo::builder()
+///     .rule("TestRule").unwrap()
+///     .object("test_table".to_string()).unwrap()
+///     .message("Test message".to_string()).unwrap()
+///     .resolution("Fix the issue".to_string()).unwrap()
+///     .try_into()
+///     .unwrap();
+///
+/// // Test Display formatting
+/// let display = format!("{}", error_info);
+/// assert!(display.contains("Rule: TestRule"));
+/// assert!(display.contains("Object: test_table"));
+/// assert!(display.contains("Message: Test message"));
+/// assert!(display.contains("Resolution: Fix the issue"));
+///
+/// // Test getter methods
+/// assert_eq!(error_info.rule(), "TestRule");
+/// assert_eq!(error_info.object(), "test_table");
+/// assert_eq!(error_info.message(), "Test message");
+/// assert_eq!(error_info.resolution(), Some("Fix the issue"));
+/// ```
 pub struct RuleErrorInfo {
     /// Type of rule which failed.
     rule: &'static str,
