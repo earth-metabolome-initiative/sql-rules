@@ -17,7 +17,7 @@ use crate::{
 /// `LowercaseForeignKeyName` constraint.
 ///
 /// ```rust
-/// use sql_constraints::prelude::*;
+/// use sql_rules::prelude::*;
 ///
 /// let constrainer: GenericConstrainer<ParserDB> = LowercaseForeignKeyName::default().into();
 ///

@@ -19,7 +19,7 @@ use heck::ToSnakeCase;
 /// `SnakeCaseColumnName` constraint.
 ///
 /// ```rust
-/// use sql_constraints::prelude::*;
+/// use sql_rules::prelude::*;
 ///
 /// let constrainer: GenericConstrainer<ParserDB> = SnakeCaseColumnName::default().into();
 ///

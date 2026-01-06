@@ -20,7 +20,7 @@ use crate::{
 /// `UniqueColumnNamesInExtensionGraph` constraint.
 ///
 /// ```rust
-/// use sql_constraints::prelude::*;
+/// use sql_rules::prelude::*;
 ///
 /// let constrainer: GenericConstrainer<ParserDB> =
 ///     UniqueColumnNamesInExtensionGraph::default().into();

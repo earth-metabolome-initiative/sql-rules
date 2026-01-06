@@ -19,7 +19,7 @@ use crate::{
 /// `PrimaryKeyReferenceEndsWithId` constraint.
 ///
 /// ```rust
-/// use sql_constraints::prelude::*;
+/// use sql_rules::prelude::*;
 ///
 /// let constrainer: GenericConstrainer<ParserDB> = PrimaryKeyReferenceEndsWithId::default().into();
 ///

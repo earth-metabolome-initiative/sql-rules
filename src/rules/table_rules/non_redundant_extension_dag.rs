@@ -23,7 +23,7 @@ use crate::{
 /// `NonRedundantExtensionDag` constraint.
 ///
 /// ```rust
-/// use sql_constraints::prelude::*;
+/// use sql_rules::prelude::*;
 ///
 /// let constrainer: GenericConstrainer<ParserDB> = NonRedundantExtensionDag::default().into();
 ///

@@ -19,7 +19,7 @@ use crate::{
 /// `UniqueForeignKey` constraint.
 ///
 /// ```rust
-/// use sql_constraints::prelude::*;
+/// use sql_rules::prelude::*;
 ///
 /// let constrainer: GenericConstrainer<ParserDB> = UniqueForeignKey::default().into();
 ///

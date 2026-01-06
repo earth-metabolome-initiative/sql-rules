@@ -17,7 +17,7 @@ use crate::{
 /// `UniqueCheckRule` rule.
 ///
 /// ```rust
-/// use sql_constraints::prelude::*;
+/// use sql_rules::prelude::*;
 ///
 /// let constrainer: GenericConstrainer<ParserDB> = UniqueCheckRule::default().into();
 ///

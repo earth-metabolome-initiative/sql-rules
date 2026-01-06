@@ -19,7 +19,7 @@ use crate::{
 /// `NoForbiddenColumnInExtension` constraint.
 ///
 /// ```rust
-/// use sql_constraints::prelude::*;
+/// use sql_rules::prelude::*;
 ///
 /// let constrainer: GenericConstrainer<ParserDB> = NoForbiddenColumnInExtension::default().into();
 ///
@@ -88,7 +88,7 @@ impl<DB> NoForbiddenColumnInExtension<DB> {
     /// # Example
     ///
     /// ```rust
-    /// use sql_constraints::prelude::*;
+    /// use sql_rules::prelude::*;
     ///
     /// let constraint: NoForbiddenColumnInExtension<ParserDB> =
     ///     NoForbiddenColumnInExtension::new("my_forbidden_column");

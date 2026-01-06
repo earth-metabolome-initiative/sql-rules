@@ -21,7 +21,7 @@ use crate::{
 /// `PluralTableName` constraint.
 ///
 /// ```rust
-/// use sql_constraints::prelude::*;
+/// use sql_rules::prelude::*;
 ///
 /// let constrainer: GenericConstrainer<ParserDB> = PluralTableName::default().into();
 ///

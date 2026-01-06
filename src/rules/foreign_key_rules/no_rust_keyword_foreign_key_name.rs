@@ -18,7 +18,7 @@ use crate::{
 /// `NoRustKeywordForeignKeyName` constraint.
 ///
 /// ```rust
-/// use sql_constraints::prelude::*;
+/// use sql_rules::prelude::*;
 ///
 /// let constrainer: GenericConstrainer<ParserDB> = NoRustKeywordForeignKeyName::default().into();
 ///

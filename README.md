@@ -13,7 +13,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-sql_constraints = "0.1.0"
+sql_rules = "0.1.0"
 ```
 
 ## Usage
@@ -25,16 +25,15 @@ The library provides a `Constrainer` trait which applies registered `TableRule`,
 The `DefaultConstrainer` comes pre-configured with a comprehensive set of common-sense rules.
 
 ```rust
-use sql_constraints::prelude::*;
-// Assuming you have a DatabaseLike implementation, e.g., from sql-parser or a mock
-use sql_traits::mock::MockDatabase; 
+use sql_rules::prelude::*;
+// ParserDB is available from sql-traits for testing and examples
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 1. Load or define your database schema
-    let database = MockDatabase::default(); // Replace with your actual DB parsing/loading
+    let database = ParserDB::try_from("CREATE TABLE users (id INT PRIMARY KEY, name TEXT);")?;
 
     // 2. Create the default constrainer
-    let constrainer = DefaultConstrainer::<MockDatabase>::default();
+    let constrainer = DefaultConstrainer::<ParserDB>::default();
 
     // 3. Validate the schema
     match constrainer.validate_schema(&database) {
@@ -51,11 +50,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 You can select specific rules using `GenericConstrainer`.
 
 ```rust
-use sql_constraints::prelude::*;
-use sql_traits::mock::MockDatabase;
+use sql_rules::prelude::*;
 
 fn main() {
-    let mut constrainer = GenericConstrainer::<MockDatabase>::default();
+    let mut constrainer = GenericConstrainer::<ParserDB>::default();
 
     // Register only specific rules
     constrainer.register_table_rule(Box::new(SnakeCaseTableName::default()));

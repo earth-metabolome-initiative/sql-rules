@@ -56,7 +56,7 @@ use crate::{
 /// # Example
 ///
 /// ```
-/// use sql_constraints::prelude::*;
+/// use sql_rules::prelude::*;
 ///
 /// let constrainer = DefaultConstrainer::<ParserDB>::default();
 /// // All constraints are now registered and ready to use

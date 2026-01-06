@@ -16,7 +16,7 @@ use crate::{
 /// `LowercaseColumnName` constraint.
 ///
 /// ```rust
-/// use sql_constraints::prelude::*;
+/// use sql_rules::prelude::*;
 ///
 /// let constrainer: GenericConstrainer<ParserDB> = LowercaseColumnName::default().into();
 ///

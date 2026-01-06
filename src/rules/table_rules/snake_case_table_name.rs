@@ -17,7 +17,7 @@ use sql_traits::traits::{DatabaseLike, TableLike};
 /// `SnakeCaseTableName` constraint.
 ///
 /// ```rust
-/// use sql_constraints::prelude::*;
+/// use sql_rules::prelude::*;
 ///
 /// let constrainer: GenericConstrainer<ParserDB> = SnakeCaseTableName::default().into();
 ///

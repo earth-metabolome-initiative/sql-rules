@@ -18,7 +18,7 @@ use crate::{
 /// `NoTautologicalCheckRule` rule.
 ///
 /// ```rust
-/// use sql_constraints::prelude::*;
+/// use sql_rules::prelude::*;
 ///
 /// let constrainer: GenericConstrainer<ParserDB> = NoTautologicalCheckRule::default().into();
 ///
