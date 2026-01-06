@@ -189,7 +189,7 @@ impl<DB: DatabaseLike> ForeignKeyConstraint for CompatibleForeignKey<DB> {
                     )
                 };
 
-                let error: ConstraintErrorInfo = ConstraintErrorInfo::new()
+                let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
                     .constraint("CompatibleForeignKey")
                     .unwrap()
                     .object(

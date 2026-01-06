@@ -24,7 +24,7 @@ pub struct ConstraintErrorInfo {
 impl ConstraintErrorInfo {
     /// Creates a new constraint error info builder.
     #[must_use]
-    pub fn new() -> builder::ConstraintErrorInfoBuilder {
+    pub fn builder() -> builder::ConstraintErrorInfoBuilder {
         builder::ConstraintErrorInfoBuilder::default()
     }
 }

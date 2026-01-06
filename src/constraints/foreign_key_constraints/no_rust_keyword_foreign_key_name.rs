@@ -52,24 +52,24 @@ impl<DB: DatabaseLike> ForeignKeyConstraint for NoRustKeywordForeignKeyName<DB> 
         _database: &Self::Database,
         foreign_key: &<Self::Database as DatabaseLike>::ForeignKey,
     ) -> Result<(), crate::error::Error> {
-        if let Some(name) = foreign_key.foreign_key_name() {
-            if is_rust_keyword(name) {
-                let error: ConstraintErrorInfo = ConstraintErrorInfo::new()
-                    .constraint("NoRustKeywordForeignKeyName")
-                    .unwrap()
-                    .object(name.to_owned())
-                    .unwrap()
-                    .message(format!("Foreign key name '{}' is a Rust keyword.", name))
-                    .unwrap()
-                    .resolution(format!(
-                        "Rename the foreign key '{}' to something that is not a Rust keyword.",
-                        name
-                    ))
-                    .unwrap()
-                    .try_into()
-                    .unwrap();
-                return Err(crate::error::Error::ForeignKey(error.into()));
-            }
+        if let Some(name) = foreign_key.foreign_key_name()
+            && is_rust_keyword(name)
+        {
+            let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
+                .constraint("NoRustKeywordForeignKeyName")
+                .unwrap()
+                .object(name.to_owned())
+                .unwrap()
+                .message(format!("Foreign key name '{}' is a Rust keyword.", name))
+                .unwrap()
+                .resolution(format!(
+                    "Rename the foreign key '{}' to something that is not a Rust keyword.",
+                    name
+                ))
+                .unwrap()
+                .try_into()
+                .unwrap();
+            return Err(crate::error::Error::ForeignKey(error.into()));
         }
         Ok(())
     }

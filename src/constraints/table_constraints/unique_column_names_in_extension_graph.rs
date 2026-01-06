@@ -203,7 +203,7 @@ impl<DB: DatabaseLike> TableConstraint for UniqueColumnNamesInExtensionGraph<DB>
             )
         };
 
-        let error: ConstraintErrorInfo = ConstraintErrorInfo::new()
+        let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
             .constraint("UniqueColumnNamesInExtensionGraph")
             .unwrap()
             .object(context.table_name().to_owned())
@@ -262,7 +262,7 @@ impl<DB: DatabaseLike> TableConstraint for UniqueColumnNamesInExtensionGraph<DB>
 
         if !duplicates.is_empty() {
             let duplicate_list = duplicates.join(", ");
-            let error: ConstraintErrorInfo = ConstraintErrorInfo::new()
+            let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
                 .constraint("UniqueColumnNamesInExtensionGraph")
                 .unwrap()
                 .object(table.table_name().to_owned())

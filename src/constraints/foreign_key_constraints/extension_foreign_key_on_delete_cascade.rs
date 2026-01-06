@@ -95,51 +95,51 @@ impl<DB: DatabaseLike> ForeignKeyConstraint for ExtensionForeignKeyOnDeleteCasca
         foreign_key: &<Self::Database as DatabaseLike>::ForeignKey,
     ) -> Result<(), crate::prelude::Error> {
         // Only check extension foreign keys
-        if foreign_key.is_extension_foreign_key(database) {
-            if !foreign_key.on_delete_cascade(database) {
-                let host_table = foreign_key.host_table(database);
-                let referenced_table = foreign_key.referenced_table(database);
+        if foreign_key.is_extension_foreign_key(database)
+            && !foreign_key.on_delete_cascade(database)
+        {
+            let host_table = foreign_key.host_table(database);
+            let referenced_table = foreign_key.referenced_table(database);
 
-                let fk_name = foreign_key
-                    .foreign_key_name()
-                    .map(|s| s.to_string())
-                    .unwrap_or_else(|| {
-                        format!(
-                            "{}.({}) -> {}.({}) ",
-                            host_table.table_name(),
-                            foreign_key
-                                .host_columns(database)
-                                .map(|c| c.column_name())
-                                .collect::<Vec<_>>()
-                                .join(", "),
-                            referenced_table.table_name(),
-                            foreign_key
-                                .referenced_columns(database)
-                                .map(|c| c.column_name())
-                                .collect::<Vec<_>>()
-                                .join(", ")
-                        )
-                    });
-
-                let error: ConstraintErrorInfo = ConstraintErrorInfo::new()
-                    .constraint("ExtensionForeignKeyOnDeleteCascade")
-                    .unwrap()
-                    .object(fk_name.clone())
-                    .unwrap()
-                    .message(format!(
-                        "Extension foreign key '{}' in table '{}' must have ON DELETE CASCADE",
-                        fk_name,
-                        host_table.table_name()
-                    ))
-                    .unwrap()
-                    .resolution(
-                        "Add ON DELETE CASCADE to the extension foreign key definition".to_string(),
+            let fk_name = foreign_key
+                .foreign_key_name()
+                .map(|s| s.to_string())
+                .unwrap_or_else(|| {
+                    format!(
+                        "{}.({}) -> {}.({}) ",
+                        host_table.table_name(),
+                        foreign_key
+                            .host_columns(database)
+                            .map(|c| c.column_name())
+                            .collect::<Vec<_>>()
+                            .join(", "),
+                        referenced_table.table_name(),
+                        foreign_key
+                            .referenced_columns(database)
+                            .map(|c| c.column_name())
+                            .collect::<Vec<_>>()
+                            .join(", ")
                     )
-                    .unwrap()
-                    .try_into()
-                    .unwrap();
-                return Err(crate::error::Error::ForeignKey(error.into()));
-            }
+                });
+
+            let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
+                .constraint("ExtensionForeignKeyOnDeleteCascade")
+                .unwrap()
+                .object(fk_name.clone())
+                .unwrap()
+                .message(format!(
+                    "Extension foreign key '{}' in table '{}' must have ON DELETE CASCADE",
+                    fk_name,
+                    host_table.table_name()
+                ))
+                .unwrap()
+                .resolution(
+                    "Add ON DELETE CASCADE to the extension foreign key definition".to_string(),
+                )
+                .unwrap()
+                .try_into()
+                .unwrap();
+            return Err(crate::error::Error::ForeignKey(error.into()));
         }
         Ok(())
     }

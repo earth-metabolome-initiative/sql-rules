@@ -129,7 +129,7 @@ impl<DB: DatabaseLike> TableConstraint for NoForbiddenColumnInExtension<DB> {
             .map(|t| t.table_name())
             .collect::<Vec<_>>();
 
-        let error: ConstraintErrorInfo = ConstraintErrorInfo::new()
+        let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
             .constraint("NoForbiddenColumnInExtension")
             .unwrap()
             .object(table_name.to_owned())

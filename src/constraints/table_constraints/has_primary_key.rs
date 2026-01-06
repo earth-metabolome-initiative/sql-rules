@@ -51,7 +51,7 @@ impl<DB: DatabaseLike> TableConstraint for HasPrimaryKey<DB> {
         _database: &Self::Database,
         context: &<Self::Database as DatabaseLike>::Table,
     ) -> Box<dyn crate::prelude::ConstraintFailureInformation> {
-        let error: ConstraintErrorInfo = ConstraintErrorInfo::new()
+        let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
             .constraint("HasPrimaryKey")
             .unwrap()
             .object(context.table_name().to_owned())

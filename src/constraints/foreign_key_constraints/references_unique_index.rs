@@ -102,7 +102,7 @@ impl<DB: DatabaseLike> ForeignKeyConstraint for ReferencesUniqueIndex<DB> {
                 .map(|col| col.column_name())
                 .collect();
 
-            let error: ConstraintErrorInfo = ConstraintErrorInfo::new()
+            let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
                 .constraint("ReferencesUniqueIndex")
                 .unwrap()
                 .object(

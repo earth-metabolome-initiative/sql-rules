@@ -93,7 +93,7 @@ impl<DB: DatabaseLike> TableConstraint for PluralTableName<DB> {
             expected_plural.clone()
         };
 
-        let error: ConstraintErrorInfo = ConstraintErrorInfo::new()
+        let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
             .constraint("PluralTableName")
             .unwrap()
             .object(table_name.to_owned())

@@ -85,7 +85,7 @@ impl<DB: DatabaseLike> TableConstraint for NoNegationCheckConstraint<DB> {
             .map(|cc| cc.expression(database).to_string())
             .unwrap_or_else(|| "unknown".to_string());
 
-        let error: ConstraintErrorInfo = ConstraintErrorInfo::new()
+        let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
             .constraint("NoNegationCheckConstraint")
             .unwrap()
             .object(table_name.to_owned())

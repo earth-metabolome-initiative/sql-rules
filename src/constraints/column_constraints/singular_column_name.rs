@@ -95,7 +95,7 @@ impl<C: ColumnLike> ColumnConstraint for SingularColumnName<C> {
             expected_singular.clone()
         };
 
-        let error: ConstraintErrorInfo = ConstraintErrorInfo::new()
+        let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
             .constraint("SingularColumnName")
             .unwrap()
             .object(format!("{}.{}", table_name, column_name))

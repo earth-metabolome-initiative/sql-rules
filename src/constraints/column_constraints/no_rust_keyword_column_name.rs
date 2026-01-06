@@ -56,7 +56,7 @@ impl<C: ColumnLike> ColumnConstraint for NoRustKeywordColumnName<C> {
     ) -> Box<dyn crate::prelude::ConstraintFailureInformation> {
         let column_name = context.column_name();
         let table_name = context.table(_database).table_name();
-        let error: ConstraintErrorInfo = ConstraintErrorInfo::new()
+        let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
             .constraint("NoRustKeywordColumnName")
             .unwrap()
             .object(format!("{}.{}", table_name, column_name))

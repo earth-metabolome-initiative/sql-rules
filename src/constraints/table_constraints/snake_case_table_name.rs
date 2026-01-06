@@ -80,7 +80,7 @@ impl<DB: DatabaseLike> TableConstraint for SnakeCaseTableName<DB> {
             "is not valid snake_case"
         };
 
-        let error: ConstraintErrorInfo = ConstraintErrorInfo::new()
+        let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
             .constraint("SnakeCaseTableName")
             .unwrap()
             .object(table_name.to_owned())

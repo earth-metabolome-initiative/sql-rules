@@ -66,7 +66,7 @@ impl<DB: DatabaseLike> ForeignKeyConstraint for LowercaseForeignKeyName<DB> {
         if let Some(name) = foreign_key.foreign_key_name()
             && name.chars().any(char::is_uppercase)
         {
-            let error: ConstraintErrorInfo = ConstraintErrorInfo::new()
+            let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
                 .constraint("LowercaseForeignKeyName")
                 .unwrap()
                 .object(foreign_key.foreign_key_name().unwrap().to_owned())

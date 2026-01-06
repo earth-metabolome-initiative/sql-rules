@@ -53,7 +53,7 @@ impl<C: ColumnLike> ColumnConstraint for LowercaseColumnName<C> {
         let table_name = table.table_name();
         let column_name = column.column_name();
 
-        let error: ConstraintErrorInfo = ConstraintErrorInfo::new()
+        let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
             .constraint("LowercaseColumnName")
             .unwrap()
             .object(format!("{}.{}", table_name, column_name))

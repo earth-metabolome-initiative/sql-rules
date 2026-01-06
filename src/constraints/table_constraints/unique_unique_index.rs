@@ -52,7 +52,7 @@ impl<DB: DatabaseLike> TableConstraint for UniqueUniqueIndex<DB> {
         _database: &Self::Database,
         context: &<Self::Database as DatabaseLike>::Table,
     ) -> Box<dyn crate::prelude::ConstraintFailureInformation> {
-        let error: ConstraintErrorInfo = ConstraintErrorInfo::new()
+        let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
             .constraint("UniqueUniqueIndex")
             .unwrap()
             .object(context.table_name().to_owned())
@@ -79,7 +79,7 @@ impl<DB: DatabaseLike> TableConstraint for UniqueUniqueIndex<DB> {
         for window in constraints.windows(2) {
             if window[0].expression(database) == window[1].expression(database) {
                 let duplicate_expression = window[0].expression(database);
-                let error: ConstraintErrorInfo = ConstraintErrorInfo::new()
+                let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
                     .constraint("UniqueUniqueIndex")
                     .unwrap()
                     .object(table.table_name().to_owned())

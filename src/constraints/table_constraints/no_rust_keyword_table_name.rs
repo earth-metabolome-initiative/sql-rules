@@ -53,7 +53,7 @@ impl<DB: DatabaseLike> TableConstraint for NoRustKeywordTableName<DB> {
         context: &<Self::Database as DatabaseLike>::Table,
     ) -> Box<dyn crate::prelude::ConstraintFailureInformation> {
         let table_name = context.table_name();
-        let error: ConstraintErrorInfo = ConstraintErrorInfo::new()
+        let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
             .constraint("NoRustKeywordTableName")
             .unwrap()
             .object(table_name.to_owned())

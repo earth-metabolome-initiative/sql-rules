@@ -112,7 +112,7 @@ impl<DB: DatabaseLike> ForeignKeyConstraint for PrimaryKeyReferenceEndsWithId<DB
                 };
 
             if references_primary_key && !host_column.column_name().ends_with("id") {
-                let error: ConstraintErrorInfo = ConstraintErrorInfo::new()
+                let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
                     .constraint("PrimaryKeyReferenceEndsWithId")
                     .unwrap()
                     .object(

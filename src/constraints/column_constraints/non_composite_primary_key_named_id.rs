@@ -67,7 +67,7 @@ impl<C: ColumnLike> ColumnConstraint for NonCompositePrimaryKeyNamedId<C> {
         let table = column.table(database);
         let table_name = table.table_name();
 
-        let error: ConstraintErrorInfo = ConstraintErrorInfo::new()
+        let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
             .constraint("NonCompositePrimaryKeyNamedId")
             .unwrap()
             .object(format!("{}.{}", table_name, column_name))

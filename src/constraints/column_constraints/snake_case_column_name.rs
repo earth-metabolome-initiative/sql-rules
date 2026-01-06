@@ -84,7 +84,7 @@ impl<C: ColumnLike> ColumnConstraint for SnakeCaseColumnName<C> {
             "is not valid snake_case"
         };
 
-        let error: ConstraintErrorInfo = ConstraintErrorInfo::new()
+        let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
             .constraint("SnakeCaseColumnName")
             .unwrap()
             .object(format!("{}.{}", table_name, column_name))

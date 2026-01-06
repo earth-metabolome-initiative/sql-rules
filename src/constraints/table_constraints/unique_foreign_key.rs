@@ -83,12 +83,12 @@ impl<DB: DatabaseLike> TableConstraint for UniqueForeignKey<DB> {
         // Find the first duplicate
         let mut duplicate_fks = Vec::new();
         for window in signatures_with_fks.windows(2) {
-            if let [(sig1, fk1), (sig2, fk2)] = window {
-                if sig1 == sig2 {
-                    duplicate_fks.push(*fk1);
-                    duplicate_fks.push(*fk2);
-                    break;
-                }
+            if let [(sig1, fk1), (sig2, fk2)] = window
+                && sig1 == sig2
+            {
+                duplicate_fks.push(*fk1);
+                duplicate_fks.push(*fk2);
+                break;
             }
         }
 
@@ -96,7 +96,7 @@ impl<DB: DatabaseLike> TableConstraint for UniqueForeignKey<DB> {
 
         if duplicate_fks.is_empty() {
             // Fallback for generic case
-            let error: ConstraintErrorInfo = ConstraintErrorInfo::new()
+            let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
                 .constraint("UniqueForeignKey")
                 .unwrap()
                 .object(table_name.to_owned())
@@ -141,7 +141,7 @@ impl<DB: DatabaseLike> TableConstraint for UniqueForeignKey<DB> {
             fk_details.first().unwrap()
         );
 
-        let error: ConstraintErrorInfo = ConstraintErrorInfo::new()
+        let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
             .constraint("UniqueForeignKey")
             .unwrap()
             .object(table_name.to_owned())
