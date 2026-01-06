@@ -5,7 +5,7 @@ use inflection_rs::inflection::singularize;
 use sql_traits::traits::{ColumnLike, DatabaseLike, TableLike};
 
 use crate::{
-    error::ConstraintErrorInfo,
+    error::RuleErrorInfo,
     traits::{ColumnRule, Constrainer, GenericConstrainer},
 };
 
@@ -58,30 +58,30 @@ use crate::{
 /// let invalid_taxa = ParserDB::try_from("CREATE TABLE mytable (taxa INT);").unwrap();
 /// assert!(constrainer.validate_schema(&invalid_taxa).is_err());
 /// ```
-pub struct SingularColumnName<C>(std::marker::PhantomData<C>);
+pub struct SingularColumnName<DB>(std::marker::PhantomData<DB>);
 
-impl<C> Default for SingularColumnName<C> {
+impl<DB> Default for SingularColumnName<DB> {
     fn default() -> Self {
         Self(std::marker::PhantomData)
     }
 }
 
-impl<DB: DatabaseLike + 'static> From<SingularColumnName<DB::Column>> for GenericConstrainer<DB> {
-    fn from(constraint: SingularColumnName<DB::Column>) -> Self {
+impl<DB: DatabaseLike + 'static> From<SingularColumnName<DB>> for GenericConstrainer<DB> {
+    fn from(constraint: SingularColumnName<DB>) -> Self {
         let mut constrainer = GenericConstrainer::default();
         constrainer.register_column_rule(Box::new(constraint));
         constrainer
     }
 }
 
-impl<C: ColumnLike> ColumnRule for SingularColumnName<C> {
-    type Column = C;
+impl<DB: DatabaseLike> ColumnRule for SingularColumnName<DB> {
+    type Database = DB;
 
     fn validate_column(
         &self,
-        database: &<Self::Column as ColumnLike>::DB,
-        column: &Self::Column,
-    ) -> Result<(), crate::error::Error> {
+        database: &Self::Database,
+        column: &<Self::Database as DatabaseLike>::Column,
+    ) -> Result<(), crate::error::Error<Self::Database>> {
         let column_name = column.column_name();
         let last_segment = column_name.split('_').next_back().unwrap_or(column_name);
 
@@ -101,8 +101,8 @@ impl<C: ColumnLike> ColumnRule for SingularColumnName<C> {
                 singularized.clone()
             };
 
-            let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
-                .constraint("SingularColumnName")
+            let error: RuleErrorInfo = RuleErrorInfo::builder()
+                .rule("SingularColumnName")
                 .unwrap()
                 .object(format!("{}.{}", table_name, column_name))
                 .unwrap()
@@ -116,7 +116,10 @@ impl<C: ColumnLike> ColumnRule for SingularColumnName<C> {
                 .unwrap()
                 .try_into()
                 .unwrap();
-            Err(crate::error::Error::Column(error.into()))
+            Err(crate::error::Error::Column(
+                Box::new(column.clone()),
+                error.into(),
+            ))
         }
     }
 }

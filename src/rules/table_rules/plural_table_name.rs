@@ -5,7 +5,7 @@ use inflection_rs::inflection::pluralize;
 use sql_traits::traits::{DatabaseLike, TableLike};
 
 use crate::{
-    error::ConstraintErrorInfo,
+    error::RuleErrorInfo,
     traits::{Constrainer, GenericConstrainer, TableRule},
 };
 
@@ -81,7 +81,7 @@ impl<DB: DatabaseLike> TableRule for PluralTableName<DB> {
         &self,
         _database: &Self::Database,
         table: &<Self::Database as DatabaseLike>::Table,
-    ) -> Result<(), crate::error::Error> {
+    ) -> Result<(), crate::error::Error<DB>> {
         let table_name = table.table_name();
         let last_segment = table_name.split('_').next_back().unwrap_or(table_name);
 
@@ -100,8 +100,8 @@ impl<DB: DatabaseLike> TableRule for PluralTableName<DB> {
                 expected_plural.clone()
             };
 
-            let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
-                .constraint("PluralTableName")
+            let error: RuleErrorInfo = RuleErrorInfo::builder()
+                .rule("PluralTableName")
                 .unwrap()
                 .object(table_name.to_owned())
                 .unwrap()
@@ -115,7 +115,10 @@ impl<DB: DatabaseLike> TableRule for PluralTableName<DB> {
                 .unwrap()
                 .try_into()
                 .unwrap();
-            Err(crate::error::Error::Table(error.into()))
+            Err(crate::error::Error::Table(
+                Box::new(table.clone()),
+                error.into(),
+            ))
         }
     }
 }

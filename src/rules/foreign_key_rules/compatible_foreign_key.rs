@@ -8,7 +8,7 @@ use std::borrow::Borrow;
 use sql_traits::traits::{ColumnLike, DatabaseLike, ForeignKeyLike, TableLike};
 
 use crate::{
-    error::ConstraintErrorInfo,
+    error::RuleErrorInfo,
     traits::{Constrainer, ForeignKeyRule, GenericConstrainer},
 };
 
@@ -88,7 +88,7 @@ impl<DB: DatabaseLike> ForeignKeyRule for CompatibleForeignKey<DB> {
         &self,
         database: &Self::Database,
         foreign_key: &<Self::Database as DatabaseLike>::ForeignKey,
-    ) -> Result<(), crate::prelude::Error> {
+    ) -> Result<(), crate::prelude::Error<DB>> {
         let host_table = foreign_key.host_table(database);
         let referenced_table = foreign_key.referenced_table(database);
         for (host_column, referenced_column) in foreign_key
@@ -189,8 +189,8 @@ impl<DB: DatabaseLike> ForeignKeyRule for CompatibleForeignKey<DB> {
                     )
                 };
 
-                let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
-                    .constraint("CompatibleForeignKey")
+                let error: RuleErrorInfo = RuleErrorInfo::builder()
+                    .rule("CompatibleForeignKey")
                     .unwrap()
                     .object(
                         foreign_key
@@ -205,7 +205,10 @@ impl<DB: DatabaseLike> ForeignKeyRule for CompatibleForeignKey<DB> {
                     .unwrap()
                     .try_into()
                     .unwrap();
-                return Err(crate::error::Error::ForeignKey(error.into()));
+                return Err(crate::error::Error::ForeignKey(
+                    Box::new(foreign_key.clone()),
+                    error.into(),
+                ));
             }
         }
 

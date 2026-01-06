@@ -4,7 +4,7 @@
 use sql_traits::traits::{DatabaseLike, TableLike};
 
 use crate::{
-    error::ConstraintErrorInfo,
+    error::RuleErrorInfo,
     traits::{Constrainer, GenericConstrainer, TableRule},
 };
 
@@ -49,7 +49,7 @@ impl<DB: DatabaseLike> TableRule for LowercaseTableName<DB> {
         &self,
         _database: &Self::Database,
         table: &<Self::Database as DatabaseLike>::Table,
-    ) -> Result<(), crate::error::Error> {
+    ) -> Result<(), crate::error::Error<DB>> {
         if table
             .table_name()
             .chars()
@@ -57,8 +57,8 @@ impl<DB: DatabaseLike> TableRule for LowercaseTableName<DB> {
         {
             Ok(())
         } else {
-            let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
-                .constraint("LowercaseTableName")
+            let error: RuleErrorInfo = RuleErrorInfo::builder()
+                .rule("LowercaseTableName")
                 .unwrap()
                 .object(table.table_name().to_owned())
                 .unwrap()
@@ -71,7 +71,10 @@ impl<DB: DatabaseLike> TableRule for LowercaseTableName<DB> {
                 .unwrap()
                 .try_into()
                 .unwrap();
-            Err(crate::error::Error::Table(error.into()))
+            Err(crate::error::Error::Table(
+                Box::new(table.clone()),
+                error.into(),
+            ))
         }
     }
 }

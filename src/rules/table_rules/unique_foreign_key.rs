@@ -7,7 +7,7 @@ use std::hash::{DefaultHasher, Hash, Hasher};
 use sql_traits::traits::{ColumnLike, DatabaseLike, ForeignKeyLike, TableLike};
 
 use crate::{
-    error::ConstraintErrorInfo,
+    error::RuleErrorInfo,
     traits::{Constrainer, GenericConstrainer, TableRule},
 };
 
@@ -59,7 +59,7 @@ impl<DB: DatabaseLike> TableRule for UniqueForeignKey<DB> {
         &self,
         database: &Self::Database,
         table: &<Self::Database as DatabaseLike>::Table,
-    ) -> Result<(), crate::error::Error> {
+    ) -> Result<(), crate::error::Error<DB>> {
         // Find the duplicate foreign keys to provide detailed error information
         let constraints = table.foreign_keys(database).collect::<Vec<_>>();
         let mut signatures_with_fks: Vec<_> = constraints
@@ -95,10 +95,10 @@ impl<DB: DatabaseLike> TableRule for UniqueForeignKey<DB> {
         if !duplicate_fks.is_empty() {
             let table_name = table.table_name();
 
-            let error: ConstraintErrorInfo = if duplicate_fks.is_empty() {
+            let error: RuleErrorInfo = if duplicate_fks.is_empty() {
                 // Fallback for generic case
-                ConstraintErrorInfo::builder()
-                    .constraint("UniqueForeignKey")
+                RuleErrorInfo::builder()
+                    .rule("UniqueForeignKey")
                     .unwrap()
                     .object(table_name.to_owned())
                     .unwrap()
@@ -141,8 +141,8 @@ impl<DB: DatabaseLike> TableRule for UniqueForeignKey<DB> {
                     fk_details.first().unwrap()
                 );
 
-                ConstraintErrorInfo::builder()
-                    .constraint("UniqueForeignKey")
+                RuleErrorInfo::builder()
+                    .rule("UniqueForeignKey")
                     .unwrap()
                     .object(table_name.to_owned())
                     .unwrap()
@@ -154,7 +154,10 @@ impl<DB: DatabaseLike> TableRule for UniqueForeignKey<DB> {
                     .unwrap()
             };
 
-            return Err(crate::error::Error::Table(error.into()));
+            return Err(crate::error::Error::Table(
+                Box::new(table.clone()),
+                error.into(),
+            ));
         }
 
         Ok(())

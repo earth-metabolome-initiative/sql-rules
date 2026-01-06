@@ -19,5 +19,5 @@ pub trait TableRule {
         &self,
         database: &Self::Database,
         table: &<Self::Database as DatabaseLike>::Table,
-    ) -> Result<(), Error>;
+    ) -> Result<(), Error<Self::Database>>;
 }

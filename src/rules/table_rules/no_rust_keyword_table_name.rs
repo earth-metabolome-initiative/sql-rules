@@ -4,7 +4,7 @@
 use sql_traits::traits::{DatabaseLike, TableLike};
 
 use crate::{
-    error::ConstraintErrorInfo,
+    error::RuleErrorInfo,
     rules::rust_keywords::is_rust_keyword,
     traits::{Constrainer, GenericConstrainer, TableRule},
 };
@@ -51,11 +51,11 @@ impl<DB: DatabaseLike> TableRule for NoRustKeywordTableName<DB> {
         &self,
         _database: &Self::Database,
         table: &<Self::Database as DatabaseLike>::Table,
-    ) -> Result<(), crate::error::Error> {
+    ) -> Result<(), crate::error::Error<DB>> {
         let table_name = table.table_name();
         if is_rust_keyword(table_name) {
-            let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
-                .constraint("NoRustKeywordTableName")
+            let error: RuleErrorInfo = RuleErrorInfo::builder()
+                .rule("NoRustKeywordTableName")
                 .unwrap()
                 .object(table_name.to_owned())
                 .unwrap()
@@ -68,7 +68,10 @@ impl<DB: DatabaseLike> TableRule for NoRustKeywordTableName<DB> {
                 .unwrap()
                 .try_into()
                 .unwrap();
-            return Err(crate::error::Error::Table(error.into()));
+            return Err(crate::error::Error::Table(
+                Box::new(table.clone()),
+                error.into(),
+            ));
         }
         Ok(())
     }

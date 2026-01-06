@@ -5,7 +5,7 @@
 use sql_traits::traits::{ColumnLike, DatabaseLike, ForeignKeyLike, TableLike};
 
 use crate::{
-    error::ConstraintErrorInfo,
+    error::RuleErrorInfo,
     traits::{Constrainer, ForeignKeyRule, GenericConstrainer},
 };
 
@@ -93,7 +93,7 @@ impl<DB: DatabaseLike> ForeignKeyRule for ExtensionForeignKeyOnDeleteCascade<DB>
         &self,
         database: &Self::Database,
         foreign_key: &<Self::Database as DatabaseLike>::ForeignKey,
-    ) -> Result<(), crate::prelude::Error> {
+    ) -> Result<(), crate::prelude::Error<DB>> {
         // Only check extension foreign keys
         if foreign_key.is_extension_foreign_key(database)
             && !foreign_key.on_delete_cascade(database)
@@ -122,8 +122,8 @@ impl<DB: DatabaseLike> ForeignKeyRule for ExtensionForeignKeyOnDeleteCascade<DB>
                     )
                 });
 
-            let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
-                .constraint("ExtensionForeignKeyOnDeleteCascade")
+            let error: RuleErrorInfo = RuleErrorInfo::builder()
+                .rule("ExtensionForeignKeyOnDeleteCascade")
                 .unwrap()
                 .object(fk_name.clone())
                 .unwrap()
@@ -139,7 +139,10 @@ impl<DB: DatabaseLike> ForeignKeyRule for ExtensionForeignKeyOnDeleteCascade<DB>
                 .unwrap()
                 .try_into()
                 .unwrap();
-            return Err(crate::error::Error::ForeignKey(error.into()));
+            return Err(crate::error::Error::ForeignKey(
+                Box::new(foreign_key.clone()),
+                error.into(),
+            ));
         }
         Ok(())
     }

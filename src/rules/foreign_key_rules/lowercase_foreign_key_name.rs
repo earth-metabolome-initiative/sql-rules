@@ -4,7 +4,7 @@
 use sql_traits::traits::{DatabaseLike, ForeignKeyLike};
 
 use crate::{
-    error::ConstraintErrorInfo,
+    error::RuleErrorInfo,
     traits::{Constrainer, ForeignKeyRule, GenericConstrainer},
 };
 
@@ -62,12 +62,12 @@ impl<DB: DatabaseLike> ForeignKeyRule for LowercaseForeignKeyName<DB> {
         &self,
         _database: &Self::Database,
         foreign_key: &<Self::Database as DatabaseLike>::ForeignKey,
-    ) -> Result<(), crate::prelude::Error> {
+    ) -> Result<(), crate::prelude::Error<DB>> {
         if let Some(name) = foreign_key.foreign_key_name()
             && name.chars().any(char::is_uppercase)
         {
-            let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
-                .constraint("LowercaseForeignKeyName")
+            let error: RuleErrorInfo = RuleErrorInfo::builder()
+                .rule("LowercaseForeignKeyName")
                 .unwrap()
                 .object(foreign_key.foreign_key_name().unwrap().to_owned())
                 .unwrap()
@@ -80,7 +80,10 @@ impl<DB: DatabaseLike> ForeignKeyRule for LowercaseForeignKeyName<DB> {
                 .unwrap()
                 .try_into()
                 .unwrap();
-            return Err(crate::error::Error::ForeignKey(error.into()));
+            return Err(crate::error::Error::ForeignKey(
+                Box::new(foreign_key.clone()),
+                error.into(),
+            ));
         }
         Ok(())
     }

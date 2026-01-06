@@ -5,7 +5,7 @@
 use sql_traits::traits::{CheckConstraintLike, DatabaseLike, TableLike};
 
 use crate::{
-    error::ConstraintErrorInfo,
+    error::RuleErrorInfo,
     traits::{Constrainer, GenericConstrainer, TableRule},
 };
 
@@ -75,7 +75,7 @@ impl<DB: DatabaseLike> TableRule for NoTautologicalCheckRule<DB> {
         &self,
         database: &Self::Database,
         table: &<Self::Database as DatabaseLike>::Table,
-    ) -> Result<(), crate::error::Error> {
+    ) -> Result<(), crate::error::Error<DB>> {
         // Check if any check constraint is tautological
         for check_constraint in table.check_constraints(database) {
             if check_constraint.is_tautology(database) {
@@ -88,8 +88,8 @@ impl<DB: DatabaseLike> TableRule for NoTautologicalCheckRule<DB> {
                     .map(|cc| cc.expression(database).to_string())
                     .unwrap_or_else(|| "unknown".to_string());
 
-                let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
-                    .constraint("NoTautologicalCheckRule")
+                let error: RuleErrorInfo = RuleErrorInfo::builder()
+                    .rule("NoTautologicalCheckRule")
                     .unwrap()
                     .object(table_name.to_owned())
                     .unwrap()
@@ -105,7 +105,10 @@ impl<DB: DatabaseLike> TableRule for NoTautologicalCheckRule<DB> {
                     .unwrap()
                     .try_into()
                     .unwrap();
-                return Err(crate::error::Error::Table(error.into()));
+                return Err(crate::error::Error::Table(
+                    Box::new(table.clone()),
+                    error.into(),
+                ));
             }
         }
 

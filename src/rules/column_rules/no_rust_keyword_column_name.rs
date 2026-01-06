@@ -4,7 +4,7 @@
 use sql_traits::traits::{ColumnLike, DatabaseLike, TableLike};
 
 use crate::{
-    error::ConstraintErrorInfo,
+    error::RuleErrorInfo,
     rules::rust_keywords::is_rust_keyword,
     traits::{ColumnRule, Constrainer, GenericConstrainer},
 };
@@ -28,37 +28,35 @@ use crate::{
 /// let valid_schema = ParserDB::try_from("CREATE TABLE mytable (my_struct INT);").unwrap();
 /// assert!(constrainer.validate_schema(&valid_schema).is_ok());
 /// ```
-pub struct NoRustKeywordColumnName<C>(std::marker::PhantomData<C>);
+pub struct NoRustKeywordColumnName<DB>(std::marker::PhantomData<DB>);
 
-impl<C> Default for NoRustKeywordColumnName<C> {
+impl<DB> Default for NoRustKeywordColumnName<DB> {
     fn default() -> Self {
         Self(std::marker::PhantomData)
     }
 }
 
-impl<DB: DatabaseLike + 'static> From<NoRustKeywordColumnName<DB::Column>>
-    for GenericConstrainer<DB>
-{
-    fn from(constraint: NoRustKeywordColumnName<DB::Column>) -> Self {
+impl<DB: DatabaseLike + 'static> From<NoRustKeywordColumnName<DB>> for GenericConstrainer<DB> {
+    fn from(constraint: NoRustKeywordColumnName<DB>) -> Self {
         let mut constrainer = GenericConstrainer::default();
         constrainer.register_column_rule(Box::new(constraint));
         constrainer
     }
 }
 
-impl<C: ColumnLike> ColumnRule for NoRustKeywordColumnName<C> {
-    type Column = C;
+impl<DB: DatabaseLike> ColumnRule for NoRustKeywordColumnName<DB> {
+    type Database = DB;
 
     fn validate_column(
         &self,
-        _database: &<Self::Column as ColumnLike>::DB,
-        column: &Self::Column,
-    ) -> Result<(), crate::error::Error> {
+        _database: &Self::Database,
+        column: &<Self::Database as DatabaseLike>::Column,
+    ) -> Result<(), crate::error::Error<Self::Database>> {
         let column_name = column.column_name();
         if is_rust_keyword(column_name) {
             let table_name = column.table(_database).table_name();
-            let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
-                .constraint("NoRustKeywordColumnName")
+            let error: RuleErrorInfo = RuleErrorInfo::builder()
+                .rule("NoRustKeywordColumnName")
                 .unwrap()
                 .object(format!("{}.{}", table_name, column_name))
                 .unwrap()
@@ -74,7 +72,10 @@ impl<C: ColumnLike> ColumnRule for NoRustKeywordColumnName<C> {
                 .unwrap()
                 .try_into()
                 .unwrap();
-            return Err(crate::error::Error::Column(error.into()));
+            return Err(crate::error::Error::Column(
+                Box::new(column.clone()),
+                error.into(),
+            ));
         }
         Ok(())
     }

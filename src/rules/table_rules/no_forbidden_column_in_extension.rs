@@ -5,7 +5,7 @@
 use sql_traits::traits::{ColumnLike, DatabaseLike, TableLike};
 
 use crate::{
-    error::ConstraintErrorInfo,
+    error::RuleErrorInfo,
     traits::{Constrainer, GenericConstrainer, TableRule},
 };
 
@@ -122,7 +122,7 @@ impl<DB: DatabaseLike> TableRule for NoForbiddenColumnInExtension<DB> {
         &self,
         database: &Self::Database,
         table: &<Self::Database as DatabaseLike>::Table,
-    ) -> Result<(), crate::error::Error> {
+    ) -> Result<(), crate::error::Error<DB>> {
         // Check if the table extends other tables
         if !table.is_extension(database) {
             // If the table doesn't extend any other table, the constraint doesn't apply
@@ -140,8 +140,8 @@ impl<DB: DatabaseLike> TableRule for NoForbiddenColumnInExtension<DB> {
                     .map(|t| t.table_name())
                     .collect::<Vec<_>>();
 
-                let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
-                    .constraint("NoForbiddenColumnInExtension")
+                let error: RuleErrorInfo = RuleErrorInfo::builder()
+                    .rule("NoForbiddenColumnInExtension")
                     .unwrap()
                     .object(table_name.to_owned())
                     .unwrap()
@@ -160,7 +160,10 @@ impl<DB: DatabaseLike> TableRule for NoForbiddenColumnInExtension<DB> {
                     .unwrap()
                     .try_into()
                     .unwrap();
-                return Err(crate::error::Error::Table(error.into()));
+                return Err(crate::error::Error::Table(
+                    Box::new(table.clone()),
+                    error.into(),
+                ));
             }
         }
 

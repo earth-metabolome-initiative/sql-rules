@@ -4,7 +4,7 @@
 use sql_traits::traits::{DatabaseLike, TableLike};
 
 use crate::{
-    error::ConstraintErrorInfo,
+    error::RuleErrorInfo,
     traits::{Constrainer, GenericConstrainer, TableRule},
 };
 
@@ -50,12 +50,12 @@ impl<DB: DatabaseLike> TableRule for HasPrimaryKey<DB> {
         &self,
         database: &Self::Database,
         table: &<Self::Database as DatabaseLike>::Table,
-    ) -> Result<(), crate::error::Error> {
+    ) -> Result<(), crate::error::Error<DB>> {
         if table.has_primary_key(database) {
             Ok(())
         } else {
-            let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
-                .constraint("HasPrimaryKey")
+            let error: RuleErrorInfo = RuleErrorInfo::builder()
+                .rule("HasPrimaryKey")
                 .unwrap()
                 .object(table.table_name().to_owned())
                 .unwrap()
@@ -68,7 +68,10 @@ impl<DB: DatabaseLike> TableRule for HasPrimaryKey<DB> {
                 .unwrap()
                 .try_into()
                 .unwrap();
-            Err(crate::error::Error::Table(error.into()))
+            Err(crate::error::Error::Table(
+                Box::new(table.clone()),
+                error.into(),
+            ))
         }
     }
 }

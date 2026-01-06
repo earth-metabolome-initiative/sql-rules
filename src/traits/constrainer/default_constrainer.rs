@@ -124,9 +124,7 @@ where
 
     fn column_rules(
         &self,
-    ) -> impl Iterator<
-        Item = &dyn crate::traits::ColumnRule<Column = <Self::Database as DatabaseLike>::Column>,
-    > {
+    ) -> impl Iterator<Item = &dyn crate::traits::ColumnRule<Database = Self::Database>> {
         self.constrainer.column_rules()
     }
 
@@ -145,7 +143,7 @@ where
 
     fn register_column_rule(
         &mut self,
-        rule: Box<dyn crate::traits::ColumnRule<Column = <Self::Database as DatabaseLike>::Column>>,
+        rule: Box<dyn crate::traits::ColumnRule<Database = Self::Database>>,
     ) {
         self.constrainer.register_column_rule(rule);
     }

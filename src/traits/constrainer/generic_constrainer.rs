@@ -1,4 +1,4 @@
-//! Submodule defining a generic constrainer for SQL constraints.
+//! Submodule defining a generic constrainer for SQL rules.
 
 use sql_traits::traits::DatabaseLike;
 
@@ -9,7 +9,7 @@ pub struct GenericConstrainer<DB: DatabaseLike> {
     /// The registered table rules.
     tables: Vec<Box<dyn crate::traits::TableRule<Database = DB>>>,
     /// The registered column rules.
-    columns: Vec<Box<dyn crate::traits::ColumnRule<Column = DB::Column>>>,
+    columns: Vec<Box<dyn crate::traits::ColumnRule<Database = DB>>>,
     /// The registered foreign key rules.
     foreign_keys: Vec<Box<dyn crate::traits::ForeignKeyRule<Database = DB>>>,
 }
@@ -35,9 +35,7 @@ impl<DB: DatabaseLike> Constrainer for GenericConstrainer<DB> {
 
     fn column_rules(
         &self,
-    ) -> impl Iterator<
-        Item = &dyn crate::traits::ColumnRule<Column = <Self::Database as DatabaseLike>::Column>,
-    > {
+    ) -> impl Iterator<Item = &dyn crate::traits::ColumnRule<Database = Self::Database>> {
         self.columns.iter().map(AsRef::as_ref)
     }
 
@@ -56,7 +54,7 @@ impl<DB: DatabaseLike> Constrainer for GenericConstrainer<DB> {
 
     fn register_column_rule(
         &mut self,
-        rule: Box<dyn crate::traits::ColumnRule<Column = <Self::Database as DatabaseLike>::Column>>,
+        rule: Box<dyn crate::traits::ColumnRule<Database = Self::Database>>,
     ) {
         self.columns.push(rule);
     }

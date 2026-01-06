@@ -6,7 +6,7 @@ use std::collections::HashSet;
 use sql_traits::traits::{ColumnLike, DatabaseLike, TableLike};
 
 use crate::{
-    error::ConstraintErrorInfo,
+    error::RuleErrorInfo,
     traits::{Constrainer, GenericConstrainer, TableRule},
 };
 
@@ -170,7 +170,7 @@ impl<DB: DatabaseLike> TableRule for UniqueColumnNamesInExtensionGraph<DB> {
         &self,
         database: &Self::Database,
         table: &<Self::Database as DatabaseLike>::Table,
-    ) -> Result<(), crate::error::Error> {
+    ) -> Result<(), crate::error::Error<DB>> {
         // Check if the table extends other tables
         let extended_tables = table
             .extended_tables(database)
@@ -211,8 +211,8 @@ impl<DB: DatabaseLike> TableRule for UniqueColumnNamesInExtensionGraph<DB> {
 
         if !duplicates.is_empty() {
             let duplicate_list = duplicates.join(", ");
-            let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
-                .constraint("UniqueColumnNamesInExtensionGraph")
+            let error: RuleErrorInfo = RuleErrorInfo::builder()
+                .rule("UniqueColumnNamesInExtensionGraph")
                 .unwrap()
                 .object(table.table_name().to_owned())
                 .unwrap()
@@ -231,7 +231,10 @@ impl<DB: DatabaseLike> TableRule for UniqueColumnNamesInExtensionGraph<DB> {
                 .unwrap()
                 .try_into()
                 .unwrap();
-            return Err(crate::error::Error::Table(error.into()));
+            return Err(crate::error::Error::Table(
+                Box::new(table.clone()),
+                error.into(),
+            ));
         }
 
         Ok(())

@@ -20,5 +20,5 @@ pub trait ForeignKeyRule {
         &self,
         database: &Self::Database,
         foreign_key: &<Self::Database as DatabaseLike>::ForeignKey,
-    ) -> Result<(), Error>;
+    ) -> Result<(), Error<Self::Database>>;
 }

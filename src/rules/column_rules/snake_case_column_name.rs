@@ -4,7 +4,7 @@
 use sql_traits::traits::{ColumnLike, DatabaseLike, TableLike};
 
 use crate::{
-    error::ConstraintErrorInfo,
+    error::RuleErrorInfo,
     traits::{ColumnRule, Constrainer, GenericConstrainer},
 };
 
@@ -45,30 +45,30 @@ use heck::ToSnakeCase;
 /// let valid_schema3 = ParserDB::try_from("CREATE TABLE mytable (first_name TEXT);").unwrap();
 /// assert!(constrainer.validate_schema(&valid_schema3).is_ok());
 /// ```
-pub struct SnakeCaseColumnName<C>(std::marker::PhantomData<C>);
+pub struct SnakeCaseColumnName<DB>(std::marker::PhantomData<DB>);
 
-impl<C> Default for SnakeCaseColumnName<C> {
+impl<DB> Default for SnakeCaseColumnName<DB> {
     fn default() -> Self {
         Self(std::marker::PhantomData)
     }
 }
 
-impl<DB: DatabaseLike + 'static> From<SnakeCaseColumnName<DB::Column>> for GenericConstrainer<DB> {
-    fn from(constraint: SnakeCaseColumnName<DB::Column>) -> Self {
+impl<DB: DatabaseLike + 'static> From<SnakeCaseColumnName<DB>> for GenericConstrainer<DB> {
+    fn from(constraint: SnakeCaseColumnName<DB>) -> Self {
         let mut constrainer = GenericConstrainer::default();
         constrainer.register_column_rule(Box::new(constraint));
         constrainer
     }
 }
 
-impl<C: ColumnLike> ColumnRule for SnakeCaseColumnName<C> {
-    type Column = C;
+impl<DB: DatabaseLike> ColumnRule for SnakeCaseColumnName<DB> {
+    type Database = DB;
 
     fn validate_column(
         &self,
-        database: &<Self::Column as ColumnLike>::DB,
-        column: &Self::Column,
-    ) -> Result<(), crate::error::Error> {
+        database: &Self::Database,
+        column: &<Self::Database as DatabaseLike>::Column,
+    ) -> Result<(), crate::error::Error<Self::Database>> {
         let column_name = column.column_name();
         let snake_cased = column_name.to_snake_case();
 
@@ -90,8 +90,8 @@ impl<C: ColumnLike> ColumnRule for SnakeCaseColumnName<C> {
                 "is not valid snake_case"
             };
 
-            let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
-                .constraint("SnakeCaseColumnName")
+            let error: RuleErrorInfo = RuleErrorInfo::builder()
+                .rule("SnakeCaseColumnName")
                 .unwrap()
                 .object(format!("{}.{}", table_name, column_name))
                 .unwrap()
@@ -105,7 +105,10 @@ impl<C: ColumnLike> ColumnRule for SnakeCaseColumnName<C> {
                 .unwrap()
                 .try_into()
                 .unwrap();
-            Err(crate::error::Error::Column(error.into()))
+            Err(crate::error::Error::Column(
+                Box::new(column.clone()),
+                error.into(),
+            ))
         }
     }
 }

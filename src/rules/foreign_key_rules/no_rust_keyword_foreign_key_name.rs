@@ -4,7 +4,7 @@
 use sql_traits::traits::{DatabaseLike, ForeignKeyLike};
 
 use crate::{
-    error::ConstraintErrorInfo,
+    error::RuleErrorInfo,
     rules::rust_keywords::is_rust_keyword,
     traits::{Constrainer, ForeignKeyRule, GenericConstrainer},
 };
@@ -51,12 +51,12 @@ impl<DB: DatabaseLike> ForeignKeyRule for NoRustKeywordForeignKeyName<DB> {
         &self,
         _database: &Self::Database,
         foreign_key: &<Self::Database as DatabaseLike>::ForeignKey,
-    ) -> Result<(), crate::error::Error> {
+    ) -> Result<(), crate::error::Error<DB>> {
         if let Some(name) = foreign_key.foreign_key_name()
             && is_rust_keyword(name)
         {
-            let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
-                .constraint("NoRustKeywordForeignKeyName")
+            let error: RuleErrorInfo = RuleErrorInfo::builder()
+                .rule("NoRustKeywordForeignKeyName")
                 .unwrap()
                 .object(name.to_owned())
                 .unwrap()
@@ -69,7 +69,10 @@ impl<DB: DatabaseLike> ForeignKeyRule for NoRustKeywordForeignKeyName<DB> {
                 .unwrap()
                 .try_into()
                 .unwrap();
-            return Err(crate::error::Error::ForeignKey(error.into()));
+            return Err(crate::error::Error::ForeignKey(
+                Box::new(foreign_key.clone()),
+                error.into(),
+            ));
         }
         Ok(())
     }

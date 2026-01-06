@@ -5,7 +5,7 @@
 use sql_traits::traits::{DatabaseLike, TableLike, UniqueIndexLike};
 
 use crate::{
-    error::ConstraintErrorInfo,
+    error::RuleErrorInfo,
     traits::{Constrainer, GenericConstrainer, TableRule},
 };
 
@@ -51,14 +51,14 @@ impl<DB: DatabaseLike> TableRule for UniqueUniqueIndex<DB> {
         &self,
         database: &Self::Database,
         table: &<Self::Database as DatabaseLike>::Table,
-    ) -> Result<(), crate::error::Error> {
+    ) -> Result<(), crate::error::Error<DB>> {
         let mut constraints = table.unique_indices(database).collect::<Vec<_>>();
         constraints.sort_unstable_by_key(|c| c.expression(database));
         for window in constraints.windows(2) {
             if window[0].expression(database) == window[1].expression(database) {
                 let duplicate_expression = window[0].expression(database);
-                let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
-                    .constraint("UniqueUniqueIndex")
+                let error: RuleErrorInfo = RuleErrorInfo::builder()
+                    .rule("UniqueUniqueIndex")
                     .unwrap()
                     .object(table.table_name().to_owned())
                     .unwrap()
@@ -72,7 +72,10 @@ impl<DB: DatabaseLike> TableRule for UniqueUniqueIndex<DB> {
                     .unwrap()
                     .try_into()
                     .unwrap();
-                return Err(crate::error::Error::Table(error.into()));
+                return Err(crate::error::Error::Table(
+                    Box::new(table.clone()),
+                    error.into(),
+                ));
             }
         }
         Ok(())

@@ -2,7 +2,7 @@
 //! table names follow `snake_case` style.
 
 use crate::{
-    error::ConstraintErrorInfo,
+    error::RuleErrorInfo,
     traits::{Constrainer, GenericConstrainer, TableRule},
 };
 use heck::ToSnakeCase;
@@ -66,7 +66,7 @@ impl<DB: DatabaseLike> TableRule for SnakeCaseTableName<DB> {
         &self,
         _database: &Self::Database,
         table: &<Self::Database as DatabaseLike>::Table,
-    ) -> Result<(), crate::error::Error> {
+    ) -> Result<(), crate::error::Error<DB>> {
         let table_name = table.table_name();
         let expected_name = table_name.to_snake_case();
 
@@ -84,8 +84,8 @@ impl<DB: DatabaseLike> TableRule for SnakeCaseTableName<DB> {
                 "is not valid snake_case"
             };
 
-            let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
-                .constraint("SnakeCaseTableName")
+            let error: RuleErrorInfo = RuleErrorInfo::builder()
+                .rule("SnakeCaseTableName")
                 .unwrap()
                 .object(table_name.to_owned())
                 .unwrap()
@@ -99,7 +99,10 @@ impl<DB: DatabaseLike> TableRule for SnakeCaseTableName<DB> {
                 .unwrap()
                 .try_into()
                 .unwrap();
-            Err(crate::error::Error::Table(error.into()))
+            Err(crate::error::Error::Table(
+                Box::new(table.clone()),
+                error.into(),
+            ))
         }
     }
 }

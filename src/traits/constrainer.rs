@@ -1,5 +1,5 @@
 //! Submodule defining the `Constrainer` trait, which defines an object that
-//! executes registered constraints while visiting a schema.
+//! executes registered rules while visiting a schema.
 
 use crate::{
     error::Error,
@@ -21,10 +21,7 @@ pub trait Constrainer: Default {
     fn register_table_rule(&mut self, rule: Box<dyn TableRule<Database = Self::Database>>);
 
     /// Registers a column rule to be applied to a column.
-    fn register_column_rule(
-        &mut self,
-        rule: Box<dyn ColumnRule<Column = <Self::Database as DatabaseLike>::Column>>,
-    );
+    fn register_column_rule(&mut self, rule: Box<dyn ColumnRule<Database = Self::Database>>);
 
     /// Registers a foreign key rule to be applied to a foreign key.
     fn register_foreign_key_rule(
@@ -36,65 +33,63 @@ pub trait Constrainer: Default {
     fn table_rules(&self) -> impl Iterator<Item = &dyn TableRule<Database = Self::Database>>;
 
     /// Returns an iterator over all registered column rules.
-    fn column_rules(
-        &self,
-    ) -> impl Iterator<Item = &dyn ColumnRule<Column = <Self::Database as DatabaseLike>::Column>>;
+    fn column_rules(&self) -> impl Iterator<Item = &dyn ColumnRule<Database = Self::Database>>;
 
     /// Returns an iterator over all registered foreign key rules.
     fn foreign_key_rules(
         &self,
     ) -> impl Iterator<Item = &dyn ForeignKeyRule<Database = Self::Database>>;
 
-    /// Encounters a table and applies all registered table constraints to it.
+    /// Encounters a table and applies all registered table rules to it.
     ///
     /// # Errors
     ///
-    /// Returns an error if any table constraint is violated.
+    /// Returns an error if any table rule is violated.
     fn encounter_table(
         &self,
         database: &Self::Database,
         table: &<Self::Database as DatabaseLike>::Table,
-    ) -> Result<(), Error> {
+    ) -> Result<(), Error<Self::Database>> {
         self.table_rules()
             .try_for_each(|constraint| constraint.validate_table(database, table))
     }
 
-    /// Encounters a column and applies all registered column constraints to it.
+    /// Encounters a column and applies all registered column rules to it.
     ///
     /// # Errors
     ///
-    /// Returns an error if any column constraint is violated.
+    /// Returns an error if any column rule is violated.
     fn encounter_column(
         &self,
         database: &Self::Database,
         column: &<Self::Database as DatabaseLike>::Column,
-    ) -> Result<(), Error> {
+    ) -> Result<(), Error<Self::Database>> {
         self.column_rules()
             .try_for_each(|constraint| constraint.validate_column(database, column))
     }
 
     /// Encounters a foreign key and applies all registered foreign key
-    /// constraints to it.
+    /// rules to it.
     ///
     /// # Errors
     ///
-    /// Returns an error if any foreign key constraint is violated.
+    /// Returns an error if any foreign key rule is violated.
     fn encounter_foreign_key(
         &self,
         database: &Self::Database,
         foreign_key: &<Self::Database as DatabaseLike>::ForeignKey,
-    ) -> Result<(), Error> {
+    ) -> Result<(), Error<Self::Database>> {
         self.foreign_key_rules()
             .try_for_each(|constraint| constraint.validate_foreign_key(database, foreign_key))
     }
 
-    /// Validates the provided schema by applying all registered constraints to
+    /// Validates the provided schema by applying all registered rules to
     /// its DB entities.
     ///
     /// # Errors
     ///
-    /// Returns an error if any constraint is violated.
-    fn validate_schema(&self, database: &Self::Database) -> Result<(), Error> {
+    /// Returns an error if any rule is violated.
+    fn validate_schema(&self, database: &Self::Database) -> Result<(), Error<Self::Database>> {
         for table in database.tables() {
             self.encounter_table(database, table)?;
             for column in table.columns(database) {

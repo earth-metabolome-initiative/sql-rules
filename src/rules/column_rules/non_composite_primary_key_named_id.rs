@@ -5,7 +5,7 @@
 use sql_traits::traits::{ColumnLike, DatabaseLike, TableLike};
 
 use crate::{
-    error::ConstraintErrorInfo,
+    error::RuleErrorInfo,
     traits::{ColumnRule, Constrainer, GenericConstrainer},
 };
 
@@ -37,32 +37,32 @@ use crate::{
 /// .unwrap();
 /// assert!(constrainer.validate_schema(&valid_composite_schema).is_ok());
 /// ```
-pub struct NonCompositePrimaryKeyNamedId<C>(std::marker::PhantomData<C>);
+pub struct NonCompositePrimaryKeyNamedId<DB>(std::marker::PhantomData<DB>);
 
-impl<C> Default for NonCompositePrimaryKeyNamedId<C> {
+impl<DB> Default for NonCompositePrimaryKeyNamedId<DB> {
     fn default() -> Self {
         Self(std::marker::PhantomData)
     }
 }
 
-impl<DB: DatabaseLike + 'static> From<NonCompositePrimaryKeyNamedId<DB::Column>>
+impl<DB: DatabaseLike + 'static> From<NonCompositePrimaryKeyNamedId<DB>>
     for GenericConstrainer<DB>
 {
-    fn from(constraint: NonCompositePrimaryKeyNamedId<DB::Column>) -> Self {
+    fn from(constraint: NonCompositePrimaryKeyNamedId<DB>) -> Self {
         let mut constrainer = GenericConstrainer::default();
         constrainer.register_column_rule(Box::new(constraint));
         constrainer
     }
 }
 
-impl<C: ColumnLike> ColumnRule for NonCompositePrimaryKeyNamedId<C> {
-    type Column = C;
+impl<DB: DatabaseLike> ColumnRule for NonCompositePrimaryKeyNamedId<DB> {
+    type Database = DB;
 
     fn validate_column(
         &self,
-        database: &<Self::Column as ColumnLike>::DB,
-        column: &Self::Column,
-    ) -> Result<(), crate::error::Error> {
+        database: &Self::Database,
+        column: &<Self::Database as DatabaseLike>::Column,
+    ) -> Result<(), crate::error::Error<Self::Database>> {
         // Check if this column is a primary key
         if !column.is_primary_key(database) {
             return Ok(());
@@ -84,8 +84,8 @@ impl<C: ColumnLike> ColumnRule for NonCompositePrimaryKeyNamedId<C> {
             let column_name = column.column_name();
             let table_name = table.table_name();
 
-            let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
-                .constraint("NonCompositePrimaryKeyNamedId")
+            let error: RuleErrorInfo = RuleErrorInfo::builder()
+                .rule("NonCompositePrimaryKeyNamedId")
                 .unwrap()
                 .object(format!("{}.{}", table_name, column_name))
                 .unwrap()
@@ -101,7 +101,10 @@ impl<C: ColumnLike> ColumnRule for NonCompositePrimaryKeyNamedId<C> {
                 .unwrap()
                 .try_into()
                 .unwrap();
-            Err(crate::error::Error::Column(error.into()))
+            Err(crate::error::Error::Column(
+                Box::new(column.clone()),
+                error.into(),
+            ))
         }
     }
 }

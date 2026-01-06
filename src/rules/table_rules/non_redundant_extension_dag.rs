@@ -10,7 +10,7 @@
 use sql_traits::traits::{DatabaseLike, TableLike};
 
 use crate::{
-    error::ConstraintErrorInfo,
+    error::RuleErrorInfo,
     traits::{Constrainer, GenericConstrainer, TableRule},
 };
 
@@ -98,7 +98,7 @@ impl<DB: DatabaseLike> TableRule for NonRedundantExtensionDag<DB> {
         &self,
         database: &Self::Database,
         table: &<Self::Database as DatabaseLike>::Table,
-    ) -> Result<(), crate::error::Error> {
+    ) -> Result<(), crate::error::Error<DB>> {
         // Collect all directly extended tables
         let extended_tables = table
             .extended_tables(database)
@@ -112,8 +112,8 @@ impl<DB: DatabaseLike> TableRule for NonRedundantExtensionDag<DB> {
                 if other_extended_table.is_descendant_of(database, extended_table)
                     || extended_table == other_extended_table
                 {
-                    let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
-                        .constraint("NonRedundantExtensionDag")
+                    let error: RuleErrorInfo = RuleErrorInfo::builder()
+                        .rule("NonRedundantExtensionDag")
                         .unwrap()
                         .object(table.table_name().to_owned())
                         .unwrap()
@@ -130,7 +130,10 @@ impl<DB: DatabaseLike> TableRule for NonRedundantExtensionDag<DB> {
                         .unwrap()
                         .try_into()
                         .unwrap();
-                    return Err(crate::error::Error::Table(error.into()));
+                    return Err(crate::error::Error::Table(
+                        Box::new(table.clone()),
+                        error.into(),
+                    ));
                 }
             }
         }

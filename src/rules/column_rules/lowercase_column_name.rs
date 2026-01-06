@@ -4,7 +4,7 @@
 use sql_traits::traits::{ColumnLike, DatabaseLike, TableLike};
 
 use crate::{
-    error::ConstraintErrorInfo,
+    error::RuleErrorInfo,
     traits::{ColumnRule, Constrainer, GenericConstrainer},
 };
 
@@ -26,30 +26,30 @@ use crate::{
 /// let valid_schema = ParserDB::try_from("CREATE TABLE mytable (id INT);").unwrap();
 /// assert!(constrainer.validate_schema(&valid_schema).is_ok());
 /// ```
-pub struct LowercaseColumnName<C>(std::marker::PhantomData<C>);
+pub struct LowercaseColumnName<DB>(std::marker::PhantomData<DB>);
 
-impl<C> Default for LowercaseColumnName<C> {
+impl<DB> Default for LowercaseColumnName<DB> {
     fn default() -> Self {
         Self(std::marker::PhantomData)
     }
 }
 
-impl<DB: DatabaseLike + 'static> From<LowercaseColumnName<DB::Column>> for GenericConstrainer<DB> {
-    fn from(constraint: LowercaseColumnName<DB::Column>) -> Self {
+impl<DB: DatabaseLike + 'static> From<LowercaseColumnName<DB>> for GenericConstrainer<DB> {
+    fn from(constraint: LowercaseColumnName<DB>) -> Self {
         let mut constrainer = GenericConstrainer::default();
         constrainer.register_column_rule(Box::new(constraint));
         constrainer
     }
 }
 
-impl<C: ColumnLike> ColumnRule for LowercaseColumnName<C> {
-    type Column = C;
+impl<DB: DatabaseLike> ColumnRule for LowercaseColumnName<DB> {
+    type Database = DB;
 
     fn validate_column(
         &self,
-        database: &<Self::Column as ColumnLike>::DB,
-        column: &Self::Column,
-    ) -> Result<(), crate::error::Error> {
+        database: &Self::Database,
+        column: &<Self::Database as DatabaseLike>::Column,
+    ) -> Result<(), crate::error::Error<Self::Database>> {
         if column
             .column_name()
             .chars()
@@ -61,8 +61,8 @@ impl<C: ColumnLike> ColumnRule for LowercaseColumnName<C> {
             let table_name = table.table_name();
             let column_name = column.column_name();
 
-            let error: ConstraintErrorInfo = ConstraintErrorInfo::builder()
-                .constraint("LowercaseColumnName")
+            let error: RuleErrorInfo = RuleErrorInfo::builder()
+                .rule("LowercaseColumnName")
                 .unwrap()
                 .object(format!("{}.{}", table_name, column_name))
                 .unwrap()
@@ -78,7 +78,10 @@ impl<C: ColumnLike> ColumnRule for LowercaseColumnName<C> {
                 .unwrap()
                 .try_into()
                 .unwrap();
-            Err(crate::error::Error::Column(error.into()))
+            Err(crate::error::Error::Column(
+                Box::new(column.clone()),
+                error.into(),
+            ))
         }
     }
 }
