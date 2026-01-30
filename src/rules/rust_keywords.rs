@@ -12,6 +12,7 @@ pub const RUST_KEYWORDS: &[&str] = &[
 ];
 
 /// Checks if the given name is a Rust keyword.
+#[must_use]
 pub fn is_rust_keyword(name: &str) -> bool {
     RUST_KEYWORDS.contains(&name)
 }

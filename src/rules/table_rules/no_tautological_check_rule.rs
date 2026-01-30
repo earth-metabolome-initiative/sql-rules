@@ -85,8 +85,10 @@ impl<DB: DatabaseLike> TableRule for NoTautologicalCheckRule<DB> {
                 let tautological_constraint = table
                     .check_constraints(database)
                     .find(|cc| cc.is_tautology(database))
-                    .map(|cc| cc.expression(database).to_string())
-                    .unwrap_or_else(|| "unknown".to_string());
+                    .map_or_else(
+                        || "unknown".to_string(),
+                        |cc| cc.expression(database).to_string(),
+                    );
 
                 let error: RuleErrorInfo = RuleErrorInfo::builder()
                     .rule("NoTautologicalCheckRule")
@@ -94,13 +96,11 @@ impl<DB: DatabaseLike> TableRule for NoTautologicalCheckRule<DB> {
                     .object(table_name.to_owned())
                     .unwrap()
                     .message(format!(
-                        "Table '{}' has a tautological check constraint: CHECK ({})",
-                        table_name, tautological_constraint
+                        "Table '{table_name}' has a tautological check constraint: CHECK ({tautological_constraint})"
                     ))
                     .unwrap()
                     .resolution(format!(
-                        "Remove the tautological check constraint 'CHECK ({})' from table '{}'",
-                        tautological_constraint, table_name
+                        "Remove the tautological check constraint 'CHECK ({tautological_constraint})' from table '{table_name}'"
                     ))
                     .unwrap()
                     .try_into()

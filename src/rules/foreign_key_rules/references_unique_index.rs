@@ -99,7 +99,7 @@ impl<DB: DatabaseLike> ForeignKeyRule for ReferencesUniqueIndex<DB> {
         if !has_matching_unique_index {
             let referenced_column_names: Vec<_> = referenced_columns
                 .iter()
-                .map(|col| col.column_name())
+                .map(ColumnLike::column_name)
                 .collect();
 
             let error: RuleErrorInfo = RuleErrorInfo::builder()

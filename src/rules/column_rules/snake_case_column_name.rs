@@ -93,7 +93,7 @@ impl<DB: DatabaseLike> ColumnRule for SnakeCaseColumnName<DB> {
             let error: RuleErrorInfo = RuleErrorInfo::builder()
                 .rule("SnakeCaseColumnName")
                 .unwrap()
-                .object(format!("{}.{}", table_name, column_name))
+                .object(format!("{table_name}.{column_name}"))
                 .unwrap()
                 .message(format!(
                     "Column '{column_name}' in table '{table_name}' violates snake_case naming convention: {issue}"

@@ -64,16 +64,14 @@ impl<DB: DatabaseLike> ColumnRule for LowercaseColumnName<DB> {
             let error: RuleErrorInfo = RuleErrorInfo::builder()
                 .rule("LowercaseColumnName")
                 .unwrap()
-                .object(format!("{}.{}", table_name, column_name))
+                .object(format!("{table_name}.{column_name}"))
                 .unwrap()
                 .message(format!(
-                    "Column '{}' in table '{}' is not lowercase",
-                    column_name, table_name
+                    "Column '{column_name}' in table '{table_name}' is not lowercase"
                 ))
                 .unwrap()
                 .resolution(format!(
-                    "Rename column '{}' in table '{}' to be all lowercase",
-                    column_name, table_name
+                    "Rename column '{column_name}' in table '{table_name}' to be all lowercase"
                 ))
                 .unwrap()
                 .try_into()

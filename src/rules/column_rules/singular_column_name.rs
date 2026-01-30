@@ -104,7 +104,7 @@ impl<DB: DatabaseLike> ColumnRule for SingularColumnName<DB> {
             let error: RuleErrorInfo = RuleErrorInfo::builder()
                 .rule("SingularColumnName")
                 .unwrap()
-                .object(format!("{}.{}", table_name, column_name))
+                .object(format!("{table_name}.{column_name}"))
                 .unwrap()
                 .message(format!(
                     "Column '{column_name}' in table '{table_name}' violates singular naming convention: the last segment '{last_segment}' is plural, not singular"

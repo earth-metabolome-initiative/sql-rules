@@ -49,25 +49,23 @@ impl<DB: DatabaseLike> ColumnRule for NoRustKeywordColumnName<DB> {
 
     fn validate_column(
         &self,
-        _database: &Self::Database,
+        database: &Self::Database,
         column: &<Self::Database as DatabaseLike>::Column,
     ) -> Result<(), crate::error::Error<Self::Database>> {
         let column_name = column.column_name();
         if is_rust_keyword(column_name) {
-            let table_name = column.table(_database).table_name();
+            let table_name = column.table(database).table_name();
             let error: RuleErrorInfo = RuleErrorInfo::builder()
                 .rule("NoRustKeywordColumnName")
                 .unwrap()
-                .object(format!("{}.{}", table_name, column_name))
+                .object(format!("{table_name}.{column_name}"))
                 .unwrap()
                 .message(format!(
-                    "Column name '{}' in table '{}' is a Rust keyword.",
-                    column_name, table_name
+                    "Column name '{column_name}' in table '{table_name}' is a Rust keyword."
                 ))
                 .unwrap()
                 .resolution(format!(
-                    "Rename the column '{}' to something that is not a Rust keyword.",
-                    column_name
+                    "Rename the column '{column_name}' to something that is not a Rust keyword."
                 ))
                 .unwrap()
                 .try_into()

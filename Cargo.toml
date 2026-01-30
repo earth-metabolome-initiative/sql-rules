@@ -16,7 +16,7 @@ inflection-rs = {git = "https://github.com/LucaCappelletti94/inflection-rs", bra
 thiserror = "2.0"
 heck = "0.5"
 
-[workspace.lints.rust]
+[lints.rust]
 missing_docs = "forbid"
 unused_macro_rules = "forbid"
 unconditional_recursion = "forbid"
@@ -25,7 +25,7 @@ unused_import_braces = "forbid"
 unused_must_use = "forbid"
 deprecated = "deny"
 
-[workspace.lints.rustdoc]
+[lints.rustdoc]
 broken_intra_doc_links = "forbid"
 bare_urls = "forbid"
 invalid_codeblock_attributes = "forbid"
@@ -35,7 +35,7 @@ unescaped_backticks = "forbid"
 redundant_explicit_links = "forbid"
 invalid_rust_codeblocks = "forbid"
 
-[workspace.lints.clippy]
+[lints.clippy]
 unreadable_literal = "allow"
 missing_panics_doc = "allow"
 new_ret_no_self = "allow"

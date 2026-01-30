@@ -60,11 +60,10 @@ impl<DB: DatabaseLike> ForeignKeyRule for NoRustKeywordForeignKeyName<DB> {
                 .unwrap()
                 .object(name.to_owned())
                 .unwrap()
-                .message(format!("Foreign key name '{}' is a Rust keyword.", name))
+                .message(format!("Foreign key name '{name}' is a Rust keyword."))
                 .unwrap()
                 .resolution(format!(
-                    "Rename the foreign key '{}' to something that is not a Rust keyword.",
-                    name
+                    "Rename the foreign key '{name}' to something that is not a Rust keyword."
                 ))
                 .unwrap()
                 .try_into()

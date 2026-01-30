@@ -102,7 +102,7 @@ impl<DB: DatabaseLike> TableRule for UniqueForeignKey<DB> {
                     .unwrap()
                     .object(table_name.to_owned())
                     .unwrap()
-                    .message(format!("Table '{}' has duplicate foreign keys", table_name))
+                    .message(format!("Table '{table_name}' has duplicate foreign keys"))
                     .unwrap()
                     .resolution("Ensure all foreign keys in the table are unique".to_string())
                     .unwrap()
@@ -112,12 +112,14 @@ impl<DB: DatabaseLike> TableRule for UniqueForeignKey<DB> {
                 // Build detailed error message with the duplicate foreign keys
                 let mut fk_details = Vec::new();
                 for fk in &duplicate_fks {
-                    let host_cols: Vec<_> =
-                        fk.host_columns(database).map(|c| c.column_name()).collect();
+                    let host_cols: Vec<_> = fk
+                        .host_columns(database)
+                        .map(ColumnLike::column_name)
+                        .collect();
                     let referenced_table = fk.referenced_table(database);
                     let referenced_cols: Vec<_> = fk
                         .referenced_columns(database)
-                        .map(|c| c.column_name())
+                        .map(ColumnLike::column_name)
                         .collect();
 
                     fk_details.push(format!(

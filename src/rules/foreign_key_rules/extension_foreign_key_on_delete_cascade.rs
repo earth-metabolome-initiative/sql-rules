@@ -101,26 +101,26 @@ impl<DB: DatabaseLike> ForeignKeyRule for ExtensionForeignKeyOnDeleteCascade<DB>
             let host_table = foreign_key.host_table(database);
             let referenced_table = foreign_key.referenced_table(database);
 
-            let fk_name = foreign_key
-                .foreign_key_name()
-                .map(|s| s.to_string())
-                .unwrap_or_else(|| {
+            let fk_name = foreign_key.foreign_key_name().map_or_else(
+                || {
                     format!(
                         "{}.({}) -> {}.({}) ",
                         host_table.table_name(),
                         foreign_key
                             .host_columns(database)
-                            .map(|c| c.column_name())
+                            .map(ColumnLike::column_name)
                             .collect::<Vec<_>>()
                             .join(", "),
                         referenced_table.table_name(),
                         foreign_key
                             .referenced_columns(database)
-                            .map(|c| c.column_name())
+                            .map(ColumnLike::column_name)
                             .collect::<Vec<_>>()
                             .join(", ")
                     )
-                });
+                },
+                ToString::to_string,
+            );
 
             let error: RuleErrorInfo = RuleErrorInfo::builder()
                 .rule("ExtensionForeignKeyOnDeleteCascade")

@@ -87,16 +87,14 @@ impl<DB: DatabaseLike> ColumnRule for NonCompositePrimaryKeyNamedId<DB> {
             let error: RuleErrorInfo = RuleErrorInfo::builder()
                 .rule("NonCompositePrimaryKeyNamedId")
                 .unwrap()
-                .object(format!("{}.{}", table_name, column_name))
+                .object(format!("{table_name}.{column_name}"))
                 .unwrap()
                 .message(format!(
-                    "Column '{}' in table '{}' is a non-composite primary key but is not named 'id'",
-                    column_name, table_name
+                    "Column '{column_name}' in table '{table_name}' is a non-composite primary key but is not named 'id'"
                 ))
                 .unwrap()
                 .resolution(format!(
-                    "Rename the primary key column '{}' to 'id' in table '{}'",
-                    column_name, table_name
+                    "Rename the primary key column '{column_name}' to 'id' in table '{table_name}'"
                 ))
                 .unwrap()
                 .try_into()

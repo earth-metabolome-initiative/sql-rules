@@ -59,11 +59,10 @@ impl<DB: DatabaseLike> TableRule for NoRustKeywordTableName<DB> {
                 .unwrap()
                 .object(table_name.to_owned())
                 .unwrap()
-                .message(format!("Table name '{}' is a Rust keyword.", table_name))
+                .message(format!("Table name '{table_name}' is a Rust keyword."))
                 .unwrap()
                 .resolution(format!(
-                    "Rename the table '{}' to something that is not a Rust keyword.",
-                    table_name
+                    "Rename the table '{table_name}' to something that is not a Rust keyword."
                 ))
                 .unwrap()
                 .try_into()

@@ -49,37 +49,25 @@ impl<DB: DatabaseLike + 'static> From<TextualColumnRule<DB>> for GenericConstrai
     }
 }
 
-impl<DB: DatabaseLike> ColumnRule for TextualColumnRule<DB> {
-    type Database = DB;
-
-    fn validate_column(
-        &self,
-        database: &Self::Database,
-        column: &<Self::Database as DatabaseLike>::Column,
+impl<DB: DatabaseLike> TextualColumnRule<DB> {
+    fn ensure_not_empty_constraint(
+        database: &DB,
+        column: &<DB as DatabaseLike>::Column,
     ) -> Result<(), crate::error::Error<DB>> {
-        // If column is not textual, we don't care.
-        if !column.is_textual(database) {
-            return Ok(());
-        }
-
-        let table = column.table(database);
-        let column_name = column.column_name();
-        let table_name = table.table_name();
-
-        // 1. Check for not-empty constraint using ColumnLike check_constraints and CheckConstraintLike is_not_empty_text_constraint
         let has_not_empty_check = column
             .check_constraints(database)
             .any(|cc| cc.is_not_empty_text_constraint(database));
 
         if !has_not_empty_check {
+            let table_name = column.table(database).table_name();
+            let column_name = column.column_name();
             let error: RuleErrorInfo = RuleErrorInfo::builder()
                 .rule("TextualColumnRule")
                 .unwrap()
-                .object(format!("{}.{}", table_name, column_name))
+                .object(format!("{table_name}.{column_name}"))
                 .unwrap()
                 .message(format!(
-                    "Textual column '{}' must have a check constraint verifying it is not empty.",
-                    column_name
+                    "Textual column '{column_name}' must have a check constraint verifying it is not empty."
                 ))
                 .unwrap()
                 .resolution("Add a check constraint verifying the column is not empty (e.g. `CHECK (col <> '')`).".to_string())
@@ -91,8 +79,13 @@ impl<DB: DatabaseLike> ColumnRule for TextualColumnRule<DB> {
                 error.into(),
             ));
         }
+        Ok(())
+    }
 
-        // 2. Check for upper bound length constraint
+    fn ensure_length_constraint_exists(
+        database: &DB,
+        column: &<DB as DatabaseLike>::Column,
+    ) -> Result<usize, crate::error::Error<DB>> {
         let mut max_length: Option<usize> = None;
 
         for cc in column.check_constraints(database) {
@@ -108,15 +101,18 @@ impl<DB: DatabaseLike> ColumnRule for TextualColumnRule<DB> {
             }
         }
 
-        if max_length.is_none() {
+        if let Some(limit) = max_length {
+            Ok(limit)
+        } else {
+            let table_name = column.table(database).table_name();
+            let column_name = column.column_name();
             let error: RuleErrorInfo = RuleErrorInfo::builder()
                 .rule("TextualColumnRule")
                 .unwrap()
-                .object(format!("{}.{}", table_name, column_name))
+                .object(format!("{table_name}.{column_name}"))
                 .unwrap()
                 .message(format!(
-                    "Textual column '{}' must have an upper bound length check constraint.",
-                    column_name
+                    "Textual column '{column_name}' must have an upper bound length check constraint."
                 ))
                 .unwrap()
                 .resolution(
@@ -126,68 +122,91 @@ impl<DB: DatabaseLike> ColumnRule for TextualColumnRule<DB> {
                 .unwrap()
                 .try_into()
                 .unwrap();
-            return Err(crate::error::Error::Column(
+            Err(crate::error::Error::Column(
                 Box::new(column.clone()),
                 error.into(),
-            ));
+            ))
         }
+    }
 
-        let limit = max_length.unwrap();
+    fn ensure_length_limits(
+        database: &DB,
+        column: &<DB as DatabaseLike>::Column,
+        limit: usize,
+    ) -> Result<(), crate::error::Error<DB>> {
+        let table = column.table(database);
+        let column_name = column.column_name();
+        let table_name = table.table_name();
 
-        // Check if appears in an index
-        // We check if it is part of an index.
         let in_unique_index = table.indices(database).any(|idx| {
             idx.columns(database)
                 .any(|c| c.column_name() == column_name)
         });
         let in_primary_key = column.is_primary_key(database);
-
         let in_index = in_unique_index || in_primary_key;
 
         if in_index {
             if limit > 255 {
                 let error: RuleErrorInfo = RuleErrorInfo::builder()
-                .rule("TextualColumnRule")
-                .unwrap()
-                .object(format!("{}.{}", table_name, column_name))
-                .unwrap()
-                .message(format!(
-                    "Textual column '{}' appears in an index but has length limit {} which is greater than 255.",
-                    column_name, limit
-                ))
-                .unwrap()
-                .resolution("Reduce the length limit to 255 or less, or remove the column from the index.".to_string())
-                .unwrap()
-                .try_into()
-                .unwrap();
+                    .rule("TextualColumnRule")
+                    .unwrap()
+                    .object(format!("{table_name}.{column_name}"))
+                    .unwrap()
+                    .message(format!(
+                        "Textual column '{column_name}' appears in an index but has length limit {limit} which is greater than 255."
+                    ))
+                    .unwrap()
+                    .resolution(
+                        "Reduce the length limit to 255 or less, or remove the column from the index."
+                            .to_string(),
+                    )
+                    .unwrap()
+                    .try_into()
+                    .unwrap();
                 return Err(crate::error::Error::Column(
                     Box::new(column.clone()),
                     error.into(),
                 ));
             }
-        } else {
-            if limit > 8192 {
-                // Warn user (Error with resolution explaining warning)
-                let error: RuleErrorInfo = RuleErrorInfo::builder()
+        } else if limit > 8192 {
+            let error: RuleErrorInfo = RuleErrorInfo::builder()
                 .rule("TextualColumnRule")
                 .unwrap()
-                .object(format!("{}.{}", table_name, column_name))
+                .object(format!("{table_name}.{column_name}"))
                 .unwrap()
                 .message(format!(
-                    "Textual column '{}' has length limit {} which is greater than 8192 (8K). This column likely stores a document.",
-                    column_name, limit
+                    "Textual column '{column_name}' has length limit {limit} which is greater than 8192 (8K). This column likely stores a document."
                 ))
                 .unwrap()
                 .resolution("If you intend to store large text documents, this might be better suited for a document store or Blob storage. Consider reducing the size if not necessary.".to_string())
                 .unwrap()
                 .try_into()
                 .unwrap();
-                return Err(crate::error::Error::Column(
-                    Box::new(column.clone()),
-                    error.into(),
-                ));
-            }
+            return Err(crate::error::Error::Column(
+                Box::new(column.clone()),
+                error.into(),
+            ));
         }
+        Ok(())
+    }
+}
+
+impl<DB: DatabaseLike> ColumnRule for TextualColumnRule<DB> {
+    type Database = DB;
+
+    fn validate_column(
+        &self,
+        database: &Self::Database,
+        column: &<Self::Database as DatabaseLike>::Column,
+    ) -> Result<(), crate::error::Error<DB>> {
+        // If column is not textual, we don't care.
+        if !column.is_textual(database) {
+            return Ok(());
+        }
+
+        Self::ensure_not_empty_constraint(database, column)?;
+        let limit = Self::ensure_length_constraint_exists(database, column)?;
+        Self::ensure_length_limits(database, column, limit)?;
 
         Ok(())
     }

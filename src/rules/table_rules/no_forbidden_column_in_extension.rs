@@ -137,7 +137,7 @@ impl<DB: DatabaseLike> TableRule for NoForbiddenColumnInExtension<DB> {
                 let table_name = table.table_name();
                 let extended_table_names = table
                     .extended_tables(database)
-                    .map(|t| t.table_name())
+                    .map(TableLike::table_name)
                     .collect::<Vec<_>>();
 
                 let error: RuleErrorInfo = RuleErrorInfo::builder()
