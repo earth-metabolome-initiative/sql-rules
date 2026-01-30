@@ -67,7 +67,7 @@ impl<DB: DatabaseLike> TextualColumnRule<DB> {
                 .object(format!("{table_name}.{column_name}"))
                 .unwrap()
                 .message(format!(
-                    "Textual column '{column_name}' must have a check constraint verifying it is not empty."
+                    "Textual column '{table_name}.{column_name}' must have a check constraint verifying it is not empty."
                 ))
                 .unwrap()
                 .resolution("Add a check constraint verifying the column is not empty (e.g. `CHECK (col <> '')`).".to_string())
@@ -112,7 +112,7 @@ impl<DB: DatabaseLike> TextualColumnRule<DB> {
                 .object(format!("{table_name}.{column_name}"))
                 .unwrap()
                 .message(format!(
-                    "Textual column '{column_name}' must have an upper bound length check constraint."
+                    "Textual column '{table_name}.{column_name}' must have an upper bound length check constraint."
                 ))
                 .unwrap()
                 .resolution(
@@ -153,7 +153,7 @@ impl<DB: DatabaseLike> TextualColumnRule<DB> {
                     .object(format!("{table_name}.{column_name}"))
                     .unwrap()
                     .message(format!(
-                        "Textual column '{column_name}' appears in an index but has length limit {limit} which is greater than 255."
+                        "Textual column '{table_name}.{column_name}' appears in an index but has length limit {limit} which is greater than 255."
                     ))
                     .unwrap()
                     .resolution(
@@ -175,7 +175,7 @@ impl<DB: DatabaseLike> TextualColumnRule<DB> {
                 .object(format!("{table_name}.{column_name}"))
                 .unwrap()
                 .message(format!(
-                    "Textual column '{column_name}' has length limit {limit} which is greater than 8192 (8K). This column likely stores a document."
+                    "Textual column '{table_name}.{column_name}' has length limit {limit} which is greater than 8192 (8K). This column likely stores a document."
                 ))
                 .unwrap()
                 .resolution("If you intend to store large text documents, this might be better suited for a document store or Blob storage. Consider reducing the size if not necessary.".to_string())
