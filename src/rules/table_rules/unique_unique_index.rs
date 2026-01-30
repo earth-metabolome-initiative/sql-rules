@@ -2,12 +2,12 @@
 //! that check constraints are unique per table, meaning that no two check
 //! constraints have the same clause in a single table.
 
-use sql_traits::traits::{DatabaseLike, TableLike, UniqueIndexLike};
-
 use crate::{
     error::RuleErrorInfo,
     traits::{Constrainer, GenericConstrainer, TableRule},
 };
+use sql_traits::traits::IndexLike;
+use sql_traits::traits::{DatabaseLike, TableLike};
 
 /// Struct defining a constraint that enforces that table names are lowercase.
 ///

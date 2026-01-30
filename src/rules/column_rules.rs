@@ -10,3 +10,5 @@ mod snake_case_column_name;
 pub use snake_case_column_name::SnakeCaseColumnName;
 mod singular_column_name;
 pub use singular_column_name::SingularColumnName;
+mod textual_column_rule;
+pub use textual_column_rule::TextualColumnRule;

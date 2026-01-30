@@ -12,8 +12,8 @@ use crate::{
         CompatibleForeignKey, HasPrimaryKey, LowercaseColumnName, LowercaseForeignKeyName,
         LowercaseTableName, NoForbiddenColumnInExtension, NonCompositePrimaryKeyNamedId,
         NonRedundantExtensionDag, PluralTableName, SingularColumnName, SnakeCaseColumnName,
-        SnakeCaseTableName, UniqueCheckRule, UniqueColumnNamesInExtensionGraph, UniqueForeignKey,
-        UniqueUniqueIndex,
+        SnakeCaseTableName, TextualColumnRule, UniqueCheckRule, UniqueColumnNamesInExtensionGraph,
+        UniqueForeignKey, UniqueUniqueIndex,
     },
     traits::Constrainer,
 };
@@ -48,6 +48,7 @@ use crate::{
 /// - [`SnakeCaseColumnName`]: Ensures column names follow `snake_case`
 ///   convention
 /// - [`SingularColumnName`]: Ensures column names are singular
+/// - [`TextualColumnRule`]: Ensures textual columns have content and length checks
 ///
 /// ## Foreign Key Constraints
 /// - [`CompatibleForeignKey`]: Ensures foreign key columns are type-compatible
@@ -96,6 +97,7 @@ where
         constrainer.register_column_rule(Box::new(SnakeCaseColumnName::default()));
         constrainer.register_column_rule(Box::new(SingularColumnName::default()));
         constrainer.register_column_rule(Box::new(NoRustKeywordColumnName::default()));
+        constrainer.register_column_rule(Box::new(TextualColumnRule::default()));
 
         // Register all foreign key constraints
         constrainer.register_foreign_key_rule(Box::new(CompatibleForeignKey::default()));

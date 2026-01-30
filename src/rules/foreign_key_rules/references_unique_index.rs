@@ -2,12 +2,12 @@
 //! that foreign keys must reference columns that are covered by a unique index
 //! in the referenced table.
 
-use sql_traits::traits::{ColumnLike, DatabaseLike, ForeignKeyLike, TableLike, UniqueIndexLike};
-
 use crate::{
     error::RuleErrorInfo,
     traits::{Constrainer, ForeignKeyRule, GenericConstrainer},
 };
+use sql_traits::traits::IndexLike;
+use sql_traits::traits::{ColumnLike, DatabaseLike, ForeignKeyLike, TableLike};
 
 /// Struct defining a constraint that enforces that foreign keys must reference
 /// columns that are covered by a unique index in the referenced table.
