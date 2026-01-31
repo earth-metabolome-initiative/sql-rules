@@ -11,9 +11,9 @@ use crate::{
     rules::{
         CompatibleForeignKey, HasPrimaryKey, LowercaseColumnName, LowercaseForeignKeyName,
         LowercaseTableName, NoForbiddenColumnInExtension, NonCompositePrimaryKeyNamedId,
-        NonRedundantExtensionDag, PluralTableName, SingularColumnName, SnakeCaseColumnName,
-        SnakeCaseTableName, TextualColumnRule, UniqueCheckRule, UniqueColumnNamesInExtensionGraph,
-        UniqueForeignKey, UniqueUniqueIndex,
+        NonRedundantExtensionDag, PastTimeColumnRule, PluralTableName, SingularColumnName,
+        SnakeCaseColumnName, SnakeCaseTableName, TextualColumnRule, UniqueCheckRule,
+        UniqueColumnNamesInExtensionGraph, UniqueForeignKey, UniqueUniqueIndex,
     },
     traits::Constrainer,
 };
@@ -49,6 +49,7 @@ use crate::{
 ///   convention
 /// - [`SingularColumnName`]: Ensures column names are singular
 /// - [`TextualColumnRule`]: Ensures textual columns have content and length checks
+/// - [`PastTimeColumnRule`]: Ensures time-related columns are in the past
 ///
 /// ## Foreign Key Constraints
 /// - [`CompatibleForeignKey`]: Ensures foreign key columns are type-compatible
@@ -98,6 +99,7 @@ where
         constrainer.register_column_rule(Box::new(SingularColumnName::default()));
         constrainer.register_column_rule(Box::new(NoRustKeywordColumnName::default()));
         constrainer.register_column_rule(Box::new(TextualColumnRule::default()));
+        constrainer.register_column_rule(Box::new(PastTimeColumnRule::default()));
 
         // Register all foreign key constraints
         constrainer.register_foreign_key_rule(Box::new(CompatibleForeignKey::default()));
