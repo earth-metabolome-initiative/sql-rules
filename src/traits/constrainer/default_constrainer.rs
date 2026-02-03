@@ -11,9 +11,10 @@ use crate::{
     rules::{
         CompatibleForeignKey, HasPrimaryKey, LowercaseColumnName, LowercaseForeignKeyName,
         LowercaseTableName, NoForbiddenColumnInExtension, NonCompositePrimaryKeyNamedId,
-        NonRedundantExtensionDag, PastTimeColumnRule, PluralTableName, SingularColumnName,
-        SnakeCaseColumnName, SnakeCaseTableName, TextualColumnRule, UniqueCheckRule,
-        UniqueColumnNamesInExtensionGraph, UniqueForeignKey, UniqueUniqueIndex,
+        NonRedundantExtensionDag, PastTimeColumnRule, PluralTableName,
+        PoliciesRequireRowLevelSecurity, SingularColumnName, SnakeCaseColumnName,
+        SnakeCaseTableName, TextualColumnRule, UniqueCheckRule, UniqueColumnNamesInExtensionGraph,
+        UniqueForeignKey, UniqueUniqueIndex,
     },
     traits::Constrainer,
 };
@@ -31,6 +32,7 @@ use crate::{
 /// - [`LowercaseTableName`]: Ensures table names are lowercase
 /// - [`SnakeCaseTableName`]: Ensures table names follow `snake_case` convention
 /// - [`PluralTableName`]: Ensures table names are plural
+/// - [`PoliciesRequireRowLevelSecurity`]: Ensures tables with policies have RLS enabled
 /// - [`NoForbiddenColumnInExtension`]: Prevents forbidden columns in extended
 ///   tables
 /// - [`NonRedundantExtensionDag`]: Ensures no redundant edges in extension
@@ -80,6 +82,7 @@ where
         constrainer.register_table_rule(Box::new(LowercaseTableName::default()));
         constrainer.register_table_rule(Box::new(SnakeCaseTableName::default()));
         constrainer.register_table_rule(Box::new(PluralTableName::default()));
+        constrainer.register_table_rule(Box::new(PoliciesRequireRowLevelSecurity::default()));
         constrainer.register_table_rule(Box::new(NoRustKeywordTableName::default()));
         constrainer.register_table_rule(Box::new(NoTautologicalCheckRule::default()));
         constrainer.register_table_rule(Box::new(NoNegationCheckRule::default()));

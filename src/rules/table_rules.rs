@@ -26,3 +26,5 @@ mod unique_column_names_in_extension_graph;
 pub use unique_column_names_in_extension_graph::UniqueColumnNamesInExtensionGraph;
 mod no_tautological_check_rule;
 pub use no_tautological_check_rule::NoTautologicalCheckRule;
+mod policies_require_row_level_security;
+pub use policies_require_row_level_security::PoliciesRequireRowLevelSecurity;

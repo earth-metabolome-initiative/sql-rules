@@ -66,24 +66,45 @@ constrainer.register_column_rule(Box::new(LowercaseColumnName::default()));
 
 ### Table Rules
 
-- **HasPrimaryKey**: Ensures everyone table has a primary key.
-- **Naming Conventions**: `LowercaseTableName`, `SnakeCaseTableName`, `PluralTableName`.
-- **Reserved Words**: `NoRustKeywordTableName`.
-- **Checks**: `NoTautologicalCheckRule`, `NoNegationCheckRule`, `UniqueCheckRule`.
-- **Extensions**: `NoForbiddenColumnInExtension`, `NonRedundantExtensionDag`.
-- **Uniqueness**: `UniqueForeignKey`, `UniqueUniqueIndex`.
+| Rule | Description |
+| :--- | :--- |
+| `HasPrimaryKey` | Ensures every table has a primary key. |
+| `LowercaseTableName` | Ensures table names are lowercase. |
+| `NoForbiddenColumnInExtension` | Prevents forbidden columns in extended tables. |
+| `NoNegationCheckRule` | Enforces that check constraints do not use negation (e.g. `NOT`). |
+| `NoRustKeywordTableName` | Ensures table names are not reserved Rust keywords. |
+| `NoTautologicalCheckRule` | Enforces that check constraints are not tautologies (always true). |
+| `NonRedundantExtensionDag` | Ensures the table extension graph is free of redundancies. |
+| `PluralTableName` | Ensures table names are plural. |
+| `PoliciesRequireRowLevelSecurity` | Ensures that if a table has policies, RLS is enabled. |
+| `SnakeCaseTableName` | Ensures table names follow `snake_case` convention. |
+| `UniqueCheckRule` | Ensures check constraints are unique within a table. |
+| `UniqueColumnNamesInExtensionGraph` | Ensures column names are unique across the table extension graph. |
+| `UniqueForeignKey` | Ensures foreign keys are unique logic-wise per table. |
+| `UniqueUniqueIndex` | Ensures unique indexes are not duplicated. |
 
 ### Column Rules
 
-- **Naming Conventions**: `LowercaseColumnName`, `SnakeCaseColumnName`, `SingularColumnName`.
-- **Reserved Words**: `NoRustKeywordColumnName`.
-- **Primary Keys**: `NonCompositePrimaryKeyNamedId`.
+| Rule | Description |
+| :--- | :--- |
+| `LowercaseColumnName` | Ensures column names are lowercase. |
+| `NoRustKeywordColumnName` | Ensures column names are not reserved Rust keywords. |
+| `NonCompositePrimaryKeyNamedId` | Ensures non-composite primary keys are named `id`. |
+| `PastTimeColumnRule` | Ensures time-related columns (ending in `_at`) have a check constraint ensuring past time. |
+| `SingularColumnName` | Ensures column names are singular. |
+| `SnakeCaseColumnName` | Ensures column names follow `snake_case` convention. |
+| `TextualColumnRule` | Ensures textual columns are not empty and have length constraints. |
 
 ### Foreign Key Rules
 
-- **Naming Conventions**: `LowercaseForeignKeyName`, `NoRustKeywordForeignKeyName`.
-- **Structure**: `CompatibleForeignKey`, `ReferencesUniqueIndex`.
-- **Best Practices**: `PrimaryKeyReferenceEndsWithId`, `ExtensionForeignKeyOnDeleteCascade`.
+| Rule | Description |
+| :--- | :--- |
+| `CompatibleForeignKey` | Ensures foreign keys types match their referenced primary keys. |
+| `ExtensionForeignKeyOnDeleteCascade` | Ensures extension foreign keys have `ON DELETE CASCADE`. |
+| `LowercaseForeignKeyName` | Ensures foreign key names are lowercase. |
+| `NoRustKeywordForeignKeyName` | Ensures foreign key names are not reserved Rust keywords. |
+| `PrimaryKeyReferenceEndsWithId` | Ensures foreign keys referencing a primary key end with `_id` suffix. |
+| `ReferencesUniqueIndex` | Ensures foreign keys reference a unique index or primary key. |
 
 ## Contributing
 
