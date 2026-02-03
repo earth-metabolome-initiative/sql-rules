@@ -26,11 +26,12 @@ The `DefaultConstrainer` comes pre-configured with a comprehensive set of common
 
 ```rust
 use sql_rules::prelude::*;
+use sqlparser::dialect::GenericDialect;
 // ParserDB is available from sql-traits for testing and examples
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 1. Load or define your database schema
-    let database = ParserDB::try_from("CREATE TABLE users (id INT PRIMARY KEY, name TEXT);")?;
+    let database = ParserDB::parse::<GenericDialect>("CREATE TABLE users (id INT PRIMARY KEY, name TEXT);")?;
 
     // 2. Create the default constrainer
     let constrainer = DefaultConstrainer::<ParserDB>::default();

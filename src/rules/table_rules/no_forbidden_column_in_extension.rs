@@ -20,10 +20,11 @@ use crate::{
 ///
 /// ```rust
 /// use sql_rules::prelude::*;
+/// use sqlparser::dialect::GenericDialect;
 ///
 /// let constrainer: GenericConstrainer<ParserDB> = NoForbiddenColumnInExtension::default().into();
 ///
-/// let invalid_schema = ParserDB::try_from(
+/// let invalid_schema = ParserDB::parse::<GenericDialect>(
 ///     r#"
 /// CREATE TABLE parent_table (id INT PRIMARY KEY, name TEXT);
 /// CREATE TABLE child_table (
@@ -36,7 +37,7 @@ use crate::{
 /// .unwrap();
 /// assert!(constrainer.validate_schema(&invalid_schema).is_err());
 ///
-/// let valid_schema = ParserDB::try_from(
+/// let valid_schema = ParserDB::parse::<GenericDialect>(
 ///     r#"
 /// CREATE TABLE parent_table (id INT PRIMARY KEY, name TEXT);
 /// CREATE TABLE child_table (
@@ -51,14 +52,14 @@ use crate::{
 ///
 /// // Tables that don't extend other tables can have columns with the forbidden name
 /// let valid_non_extension_schema =
-///     ParserDB::try_from("CREATE TABLE mytable (id INT PRIMARY KEY, extension TEXT);").unwrap();
+///     ParserDB::parse::<GenericDialect>("CREATE TABLE mytable (id INT PRIMARY KEY, extension TEXT);").unwrap();
 /// assert!(constrainer.validate_schema(&valid_non_extension_schema).is_ok());
 ///
 /// // Custom forbidden name
 /// let custom_constrainer: GenericConstrainer<ParserDB> =
 ///     NoForbiddenColumnInExtension::new("custom_forbidden").into();
 ///
-/// let invalid_custom_schema = ParserDB::try_from(
+/// let invalid_custom_schema = ParserDB::parse::<GenericDialect>(
 ///     r#"
 /// CREATE TABLE parent_table (id INT PRIMARY KEY, name TEXT);
 /// CREATE TABLE child_table (

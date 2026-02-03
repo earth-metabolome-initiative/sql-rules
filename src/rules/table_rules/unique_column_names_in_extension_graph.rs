@@ -21,12 +21,13 @@ use crate::{
 ///
 /// ```rust
 /// use sql_rules::prelude::*;
+/// use sqlparser::dialect::GenericDialect;
 ///
 /// let constrainer: GenericConstrainer<ParserDB> =
 ///     UniqueColumnNamesInExtensionGraph::default().into();
 ///
 /// // Invalid: child_table has 'name' column, which also exists in parent_table
-/// let invalid_schema = ParserDB::try_from(
+/// let invalid_schema = ParserDB::parse::<GenericDialect>(
 ///     r#"
 /// CREATE TABLE parent_table (id INT PRIMARY KEY, name TEXT);
 /// CREATE TABLE child_table (
@@ -40,7 +41,7 @@ use crate::{
 /// assert!(constrainer.validate_schema(&invalid_schema).is_err());
 ///
 /// // Valid: child_table has unique column names
-/// let valid_schema = ParserDB::try_from(
+/// let valid_schema = ParserDB::parse::<GenericDialect>(
 ///     r#"
 /// CREATE TABLE parent_table (id INT PRIMARY KEY, name TEXT);
 /// CREATE TABLE child_table (
@@ -54,7 +55,7 @@ use crate::{
 /// assert!(constrainer.validate_schema(&valid_schema).is_ok());
 ///
 /// // Valid: non-extension tables can have any column names
-/// let valid_non_extension = ParserDB::try_from(
+/// let valid_non_extension = ParserDB::parse::<GenericDialect>(
 ///     r#"
 /// CREATE TABLE table1 (id INT PRIMARY KEY, name TEXT);
 /// CREATE TABLE table2 (id INT PRIMARY KEY, name TEXT);
@@ -64,7 +65,7 @@ use crate::{
 /// assert!(constrainer.validate_schema(&valid_non_extension).is_ok());
 ///
 /// // Valid: primary key column (id) can be shared in extension
-/// let valid_shared_pk = ParserDB::try_from(
+/// let valid_shared_pk = ParserDB::parse::<GenericDialect>(
 ///     r#"
 /// CREATE TABLE parent_table (id INT PRIMARY KEY, name TEXT);
 /// CREATE TABLE child_table (
@@ -78,7 +79,7 @@ use crate::{
 /// assert!(constrainer.validate_schema(&valid_shared_pk).is_ok());
 ///
 /// // Invalid: transitive extension - grandchild cannot have column from grandparent
-/// let invalid_transitive = ParserDB::try_from(
+/// let invalid_transitive = ParserDB::parse::<GenericDialect>(
 ///     r#"
 /// CREATE TABLE grandparent_table (id INT PRIMARY KEY, name TEXT);
 /// CREATE TABLE parent_table (

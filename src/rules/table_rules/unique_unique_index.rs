@@ -18,14 +18,15 @@ use sql_traits::traits::{DatabaseLike, TableLike};
 ///
 /// ```rust
 /// use sql_rules::prelude::*;
+/// use sqlparser::dialect::GenericDialect;
 ///
 /// let constrainer: GenericConstrainer<ParserDB> = UniqueUniqueIndex::default().into();
 ///
 /// let invalid_schema =
-///     ParserDB::try_from("CREATE TABLE MyTable (id INT, UNIQUE (id), UNIQUE (id));").unwrap();
+///     ParserDB::parse::<GenericDialect>("CREATE TABLE MyTable (id INT, UNIQUE (id), UNIQUE (id));").unwrap();
 /// assert!(constrainer.validate_schema(&invalid_schema).is_err());
 ///
-/// let valid_schema = ParserDB::try_from("CREATE TABLE mytable (id INT, UNIQUE (id));").unwrap();
+/// let valid_schema = ParserDB::parse::<GenericDialect>("CREATE TABLE mytable (id INT, UNIQUE (id));").unwrap();
 /// assert!(constrainer.validate_schema(&valid_schema).is_ok());
 /// ```
 pub struct UniqueUniqueIndex<DB>(std::marker::PhantomData<DB>);

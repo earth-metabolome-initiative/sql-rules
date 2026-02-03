@@ -18,22 +18,23 @@ use crate::{
 ///
 /// ```rust
 /// use sql_rules::prelude::*;
+/// use sqlparser::dialect::GenericDialect;
 ///
 /// let constrainer: GenericConstrainer<ParserDB> = LowercaseForeignKeyName::default().into();
 ///
-/// let invalid_schema = ParserDB::try_from(
+/// let invalid_schema = ParserDB::parse::<GenericDialect>(
 ///     "CREATE TABLE mytable (id INT, CONSTRAINT Fk FOREIGN KEY (id) REFERENCES mytable (id));",
 /// )
 /// .unwrap();
 /// assert!(constrainer.validate_schema(&invalid_schema).is_err());
 ///
-/// let valid_schema1 = ParserDB::try_from(
+/// let valid_schema1 = ParserDB::parse::<GenericDialect>(
 ///     "CREATE TABLE mytable (id INT, CONSTRAINT fk FOREIGN KEY (id) REFERENCES mytable (id));",
 /// )
 /// .unwrap();
 /// assert!(constrainer.validate_schema(&valid_schema1).is_ok());
 ///
-/// let valid_schema2 = ParserDB::try_from(
+/// let valid_schema2 = ParserDB::parse::<GenericDialect>(
 ///     "CREATE TABLE mytable (id INT, FOREIGN KEY (id) REFERENCES mytable (id));",
 /// )
 /// .unwrap();

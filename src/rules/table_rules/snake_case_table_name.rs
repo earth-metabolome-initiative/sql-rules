@@ -18,29 +18,30 @@ use sql_traits::traits::{DatabaseLike, TableLike};
 ///
 /// ```rust
 /// use sql_rules::prelude::*;
+/// use sqlparser::dialect::GenericDialect;
 ///
 /// let constrainer: GenericConstrainer<ParserDB> = SnakeCaseTableName::default().into();
 ///
 /// // Invalid: PascalCase
-/// let invalid_schema = ParserDB::try_from("CREATE TABLE MyTable (id INT);").unwrap();
+/// let invalid_schema = ParserDB::parse::<GenericDialect>("CREATE TABLE MyTable (id INT);").unwrap();
 /// assert!(constrainer.validate_schema(&invalid_schema).is_err());
 ///
 /// // Invalid: double underscore
-/// let invalid_schema2 = ParserDB::try_from("CREATE TABLE my__table (id INT);").unwrap();
+/// let invalid_schema2 = ParserDB::parse::<GenericDialect>("CREATE TABLE my__table (id INT);").unwrap();
 /// assert!(constrainer.validate_schema(&invalid_schema2).is_err());
 ///
 /// // Invalid: camelCase
-/// let invalid_schema3 = ParserDB::try_from("CREATE TABLE myTable (id INT);").unwrap();
+/// let invalid_schema3 = ParserDB::parse::<GenericDialect>("CREATE TABLE myTable (id INT);").unwrap();
 /// assert!(constrainer.validate_schema(&invalid_schema3).is_err());
 ///
 /// // Valid: proper snake_case
-/// let valid_schema = ParserDB::try_from("CREATE TABLE my_table (id INT);").unwrap();
+/// let valid_schema = ParserDB::parse::<GenericDialect>("CREATE TABLE my_table (id INT);").unwrap();
 /// assert!(constrainer.validate_schema(&valid_schema).is_ok());
 ///
-/// let valid_schema2 = ParserDB::try_from("CREATE TABLE users (id INT);").unwrap();
+/// let valid_schema2 = ParserDB::parse::<GenericDialect>("CREATE TABLE users (id INT);").unwrap();
 /// assert!(constrainer.validate_schema(&valid_schema2).is_ok());
 ///
-/// let valid_schema3 = ParserDB::try_from("CREATE TABLE user_accounts (id INT);").unwrap();
+/// let valid_schema3 = ParserDB::parse::<GenericDialect>("CREATE TABLE user_accounts (id INT);").unwrap();
 /// assert!(constrainer.validate_schema(&valid_schema3).is_ok());
 /// ```
 pub struct SnakeCaseTableName<DB>(std::marker::PhantomData<DB>);

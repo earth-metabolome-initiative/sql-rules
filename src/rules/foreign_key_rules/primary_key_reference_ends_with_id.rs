@@ -20,10 +20,11 @@ use crate::{
 ///
 /// ```rust
 /// use sql_rules::prelude::*;
+/// use sqlparser::dialect::GenericDialect;
 ///
 /// let constrainer: GenericConstrainer<ParserDB> = PrimaryKeyReferenceEndsWithId::default().into();
 ///
-/// let invalid_schema = ParserDB::try_from(
+/// let invalid_schema = ParserDB::parse::<GenericDialect>(
 ///     r#"
 /// CREATE TABLE parent (id INT PRIMARY KEY);
 /// CREATE TABLE child (parent_key INT, FOREIGN KEY (parent_key) REFERENCES parent (id));
@@ -32,7 +33,7 @@ use crate::{
 /// .unwrap();
 /// assert!(constrainer.validate_schema(&invalid_schema).is_err());
 ///
-/// let valid_schema_direct = ParserDB::try_from(
+/// let valid_schema_direct = ParserDB::parse::<GenericDialect>(
 ///     r#"
 /// CREATE TABLE parent (id INT PRIMARY KEY);
 /// CREATE TABLE child (parent_id INT, FOREIGN KEY (parent_id) REFERENCES parent (id));
@@ -41,7 +42,7 @@ use crate::{
 /// .unwrap();
 /// assert!(constrainer.validate_schema(&valid_schema_direct).is_ok());
 ///
-/// let valid_schema_indirect = ParserDB::try_from(
+/// let valid_schema_indirect = ParserDB::parse::<GenericDialect>(
 ///     r#"
 /// CREATE TABLE grandparent (id INT PRIMARY KEY);
 /// CREATE TABLE parent (gp_id INT, FOREIGN KEY (gp_id) REFERENCES grandparent (id));
@@ -51,7 +52,7 @@ use crate::{
 /// .unwrap();
 /// assert!(constrainer.validate_schema(&valid_schema_indirect).is_ok());
 ///
-/// let valid_schema_non_pk = ParserDB::try_from(
+/// let valid_schema_non_pk = ParserDB::parse::<GenericDialect>(
 ///     r#"
 /// CREATE TABLE parent (id INT PRIMARY KEY, code TEXT UNIQUE);
 /// CREATE TABLE child (parent_code TEXT, FOREIGN KEY (parent_code) REFERENCES parent (code));

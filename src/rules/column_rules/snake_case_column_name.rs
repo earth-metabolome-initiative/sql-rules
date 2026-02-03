@@ -20,29 +20,30 @@ use heck::ToSnakeCase;
 ///
 /// ```rust
 /// use sql_rules::prelude::*;
+/// use sqlparser::dialect::GenericDialect;
 ///
 /// let constrainer: GenericConstrainer<ParserDB> = SnakeCaseColumnName::default().into();
 ///
 /// // Invalid: PascalCase
-/// let invalid_schema = ParserDB::try_from("CREATE TABLE mytable (MyColumn INT);").unwrap();
+/// let invalid_schema = ParserDB::parse::<GenericDialect>("CREATE TABLE mytable (MyColumn INT);").unwrap();
 /// assert!(constrainer.validate_schema(&invalid_schema).is_err());
 ///
 /// // Invalid: double underscore
-/// let invalid_schema2 = ParserDB::try_from("CREATE TABLE mytable (my__column INT);").unwrap();
+/// let invalid_schema2 = ParserDB::parse::<GenericDialect>("CREATE TABLE mytable (my__column INT);").unwrap();
 /// assert!(constrainer.validate_schema(&invalid_schema2).is_err());
 ///
 /// // Invalid: camelCase
-/// let invalid_schema3 = ParserDB::try_from("CREATE TABLE mytable (myColumn INT);").unwrap();
+/// let invalid_schema3 = ParserDB::parse::<GenericDialect>("CREATE TABLE mytable (myColumn INT);").unwrap();
 /// assert!(constrainer.validate_schema(&invalid_schema3).is_err());
 ///
 /// // Valid: proper snake_case
-/// let valid_schema = ParserDB::try_from("CREATE TABLE mytable (my_column INT);").unwrap();
+/// let valid_schema = ParserDB::parse::<GenericDialect>("CREATE TABLE mytable (my_column INT);").unwrap();
 /// assert!(constrainer.validate_schema(&valid_schema).is_ok());
 ///
-/// let valid_schema2 = ParserDB::try_from("CREATE TABLE mytable (id INT);").unwrap();
+/// let valid_schema2 = ParserDB::parse::<GenericDialect>("CREATE TABLE mytable (id INT);").unwrap();
 /// assert!(constrainer.validate_schema(&valid_schema2).is_ok());
 ///
-/// let valid_schema3 = ParserDB::try_from("CREATE TABLE mytable (first_name TEXT);").unwrap();
+/// let valid_schema3 = ParserDB::parse::<GenericDialect>("CREATE TABLE mytable (first_name TEXT);").unwrap();
 /// assert!(constrainer.validate_schema(&valid_schema3).is_ok());
 /// ```
 pub struct SnakeCaseColumnName<DB>(std::marker::PhantomData<DB>);

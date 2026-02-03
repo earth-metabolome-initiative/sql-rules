@@ -19,10 +19,11 @@ use sql_traits::traits::{ColumnLike, DatabaseLike, ForeignKeyLike, TableLike};
 ///
 /// ```rust
 /// use sql_rules::prelude::*;
+/// use sqlparser::dialect::GenericDialect;
 ///
 /// let constrainer: GenericConstrainer<ParserDB> = ReferencesUniqueIndex::default().into();
 ///
-/// let invalid_schema = ParserDB::try_from(
+/// let invalid_schema = ParserDB::parse::<GenericDialect>(
 ///     r#"
 /// CREATE TABLE parent (id INT, name TEXT);
 /// CREATE TABLE child (id INT, FOREIGN KEY (id) REFERENCES parent (id));
@@ -31,7 +32,7 @@ use sql_traits::traits::{ColumnLike, DatabaseLike, ForeignKeyLike, TableLike};
 /// .unwrap();
 /// assert!(constrainer.validate_schema(&invalid_schema).is_err());
 ///
-/// let valid_schema_primary_key = ParserDB::try_from(
+/// let valid_schema_primary_key = ParserDB::parse::<GenericDialect>(
 ///     r#"
 /// CREATE TABLE parent (id INT PRIMARY KEY);
 /// CREATE TABLE child (id INT, FOREIGN KEY (id) REFERENCES parent (id));
@@ -40,7 +41,7 @@ use sql_traits::traits::{ColumnLike, DatabaseLike, ForeignKeyLike, TableLike};
 /// .unwrap();
 /// assert!(constrainer.validate_schema(&valid_schema_primary_key).is_ok());
 ///
-/// let valid_schema_unique = ParserDB::try_from(
+/// let valid_schema_unique = ParserDB::parse::<GenericDialect>(
 ///     r#"
 /// CREATE TABLE parent (id INT UNIQUE);
 /// CREATE TABLE child (id INT, FOREIGN KEY (id) REFERENCES parent (id));
@@ -49,7 +50,7 @@ use sql_traits::traits::{ColumnLike, DatabaseLike, ForeignKeyLike, TableLike};
 /// .unwrap();
 /// assert!(constrainer.validate_schema(&valid_schema_unique).is_ok());
 ///
-/// let valid_schema_composite = ParserDB::try_from(
+/// let valid_schema_composite = ParserDB::parse::<GenericDialect>(
 ///     r#"
 /// CREATE TABLE parent (id INT, code TEXT, UNIQUE (id, code));
 /// CREATE TABLE child (id INT, code TEXT, FOREIGN KEY (id, code) REFERENCES parent (id, code));

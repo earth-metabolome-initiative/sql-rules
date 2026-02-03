@@ -22,40 +22,41 @@ use crate::{
 ///
 /// ```rust
 /// use sql_rules::prelude::*;
+/// use sqlparser::dialect::GenericDialect;
 ///
 /// let constrainer: GenericConstrainer<ParserDB> = SingularColumnName::default().into();
 ///
 /// // Invalid plural column names
-/// let invalid_schema = ParserDB::try_from("CREATE TABLE mytable (users INT);").unwrap();
+/// let invalid_schema = ParserDB::parse::<GenericDialect>("CREATE TABLE mytable (users INT);").unwrap();
 /// assert!(constrainer.validate_schema(&invalid_schema).is_err());
 ///
-/// let invalid_schema2 = ParserDB::try_from("CREATE TABLE mytable (user_accounts INT);").unwrap();
+/// let invalid_schema2 = ParserDB::parse::<GenericDialect>("CREATE TABLE mytable (user_accounts INT);").unwrap();
 /// assert!(constrainer.validate_schema(&invalid_schema2).is_err());
 ///
 /// // Valid singular column names
-/// let valid_schema = ParserDB::try_from("CREATE TABLE mytable (user INT);").unwrap();
+/// let valid_schema = ParserDB::parse::<GenericDialect>("CREATE TABLE mytable (user INT);").unwrap();
 /// assert!(constrainer.validate_schema(&valid_schema).is_ok());
 ///
-/// let valid_schema2 = ParserDB::try_from("CREATE TABLE mytable (user_account INT);").unwrap();
+/// let valid_schema2 = ParserDB::parse::<GenericDialect>("CREATE TABLE mytable (user_account INT);").unwrap();
 /// assert!(constrainer.validate_schema(&valid_schema2).is_ok());
 ///
 /// // Edge cases with Latin singulars
-/// let valid_spectrum = ParserDB::try_from("CREATE TABLE mytable (spectrum INT);").unwrap();
+/// let valid_spectrum = ParserDB::parse::<GenericDialect>("CREATE TABLE mytable (spectrum INT);").unwrap();
 /// assert!(constrainer.validate_schema(&valid_spectrum).is_ok());
 ///
-/// let invalid_spectra = ParserDB::try_from("CREATE TABLE mytable (spectra INT);").unwrap();
+/// let invalid_spectra = ParserDB::parse::<GenericDialect>("CREATE TABLE mytable (spectra INT);").unwrap();
 /// assert!(constrainer.validate_schema(&invalid_spectra).is_err());
 ///
-/// let valid_matrix = ParserDB::try_from("CREATE TABLE mytable (matrix INT);").unwrap();
+/// let valid_matrix = ParserDB::parse::<GenericDialect>("CREATE TABLE mytable (matrix INT);").unwrap();
 /// assert!(constrainer.validate_schema(&valid_matrix).is_ok());
 ///
-/// let invalid_matrices = ParserDB::try_from("CREATE TABLE mytable (matrices INT);").unwrap();
+/// let invalid_matrices = ParserDB::parse::<GenericDialect>("CREATE TABLE mytable (matrices INT);").unwrap();
 /// assert!(constrainer.validate_schema(&invalid_matrices).is_err());
 ///
-/// let valid_taxon = ParserDB::try_from("CREATE TABLE mytable (taxon INT);").unwrap();
+/// let valid_taxon = ParserDB::parse::<GenericDialect>("CREATE TABLE mytable (taxon INT);").unwrap();
 /// assert!(constrainer.validate_schema(&valid_taxon).is_ok());
 ///
-/// let invalid_taxa = ParserDB::try_from("CREATE TABLE mytable (taxa INT);").unwrap();
+/// let invalid_taxa = ParserDB::parse::<GenericDialect>("CREATE TABLE mytable (taxa INT);").unwrap();
 /// assert!(constrainer.validate_schema(&invalid_taxa).is_err());
 /// ```
 pub struct SingularColumnName<DB>(std::marker::PhantomData<DB>);

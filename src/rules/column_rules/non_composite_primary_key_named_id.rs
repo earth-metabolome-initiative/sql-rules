@@ -19,19 +19,20 @@ use crate::{
 ///
 /// ```rust
 /// use sql_rules::prelude::*;
+/// use sqlparser::dialect::GenericDialect;
 ///
 /// let constrainer: GenericConstrainer<ParserDB> = NonCompositePrimaryKeyNamedId::default().into();
 ///
 /// let invalid_schema =
-///     ParserDB::try_from("CREATE TABLE mytable (pk INT PRIMARY KEY, name TEXT);").unwrap();
+///     ParserDB::parse::<GenericDialect>("CREATE TABLE mytable (pk INT PRIMARY KEY, name TEXT);").unwrap();
 /// assert!(constrainer.validate_schema(&invalid_schema).is_err());
 ///
 /// let valid_schema =
-///     ParserDB::try_from("CREATE TABLE mytable (id INT PRIMARY KEY, name TEXT);").unwrap();
+///     ParserDB::parse::<GenericDialect>("CREATE TABLE mytable (id INT PRIMARY KEY, name TEXT);").unwrap();
 /// assert!(constrainer.validate_schema(&valid_schema).is_ok());
 ///
 /// // Composite primary keys are allowed to have any name
-/// let valid_composite_schema = ParserDB::try_from(
+/// let valid_composite_schema = ParserDB::parse::<GenericDialect>(
 ///     "CREATE TABLE mytable (pk1 INT, pk2 INT, name TEXT, PRIMARY KEY (pk1, pk2));",
 /// )
 /// .unwrap();

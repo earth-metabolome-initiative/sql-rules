@@ -20,20 +20,27 @@ use crate::{
 ///
 /// ```rust
 /// use sql_rules::prelude::*;
+/// use sqlparser::dialect::GenericDialect;
 ///
 /// let constrainer: GenericConstrainer<ParserDB> = UniqueForeignKey::default().into();
 ///
 /// let invalid_schema =
-///     ParserDB::try_from("CREATE TABLE MyTable (id INT PRIMARY KEY REFERENCES MyTable (id), FOREIGN KEY (id) REFERENCES MyTable (id));")
-///         .unwrap();
+///     ParserDB::parse::<GenericDialect>(
+///         "CREATE TABLE MyTable (id INT PRIMARY KEY REFERENCES MyTable (id), FOREIGN KEY (id) REFERENCES MyTable (id));",
+///     )
+///     .unwrap();
 /// assert!(constrainer.validate_schema(&invalid_schema).is_err(), "1) Foreign keys must be unique per table");
 ///
-/// let invalid_schema2 =
-///     ParserDB::try_from("CREATE TABLE MyTable (id INT PRIMARY KEY, FOREIGN KEY (id) REFERENCES MyTable (id), FOREIGN KEY (id) REFERENCES MyTable (id));").unwrap();
+/// let invalid_schema2 = ParserDB::parse::<GenericDialect>(
+///     "CREATE TABLE MyTable (id INT PRIMARY KEY, FOREIGN KEY (id) REFERENCES MyTable (id), FOREIGN KEY (id) REFERENCES MyTable (id));",
+/// )
+/// .unwrap();
 /// assert!(constrainer.validate_schema(&invalid_schema2).is_err(), "2) Foreign keys must be unique per table");
 ///
-/// let valid_schema =
-///     ParserDB::try_from("CREATE TABLE mytable (id INT PRIMARY KEY, FOREIGN KEY (id) REFERENCES mytable (id));").unwrap();
+/// let valid_schema = ParserDB::parse::<GenericDialect>(
+///     "CREATE TABLE mytable (id INT PRIMARY KEY, FOREIGN KEY (id) REFERENCES mytable (id));",
+/// )
+/// .unwrap();
 /// assert!(constrainer.validate_schema(&valid_schema).is_ok());
 /// ```
 pub struct UniqueForeignKey<DB>(std::marker::PhantomData<DB>);

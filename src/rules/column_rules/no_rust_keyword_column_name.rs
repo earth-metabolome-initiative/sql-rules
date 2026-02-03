@@ -19,13 +19,14 @@ use crate::{
 ///
 /// ```rust
 /// use sql_rules::prelude::*;
+/// use sqlparser::dialect::GenericDialect;
 ///
 /// let constrainer: GenericConstrainer<ParserDB> = NoRustKeywordColumnName::default().into();
 ///
-/// let invalid_schema = ParserDB::try_from("CREATE TABLE mytable (struct INT);").unwrap();
+/// let invalid_schema = ParserDB::parse::<GenericDialect>("CREATE TABLE mytable (struct INT);").unwrap();
 /// assert!(constrainer.validate_schema(&invalid_schema).is_err());
 ///
-/// let valid_schema = ParserDB::try_from("CREATE TABLE mytable (my_struct INT);").unwrap();
+/// let valid_schema = ParserDB::parse::<GenericDialect>("CREATE TABLE mytable (my_struct INT);").unwrap();
 /// assert!(constrainer.validate_schema(&valid_schema).is_ok());
 /// ```
 pub struct NoRustKeywordColumnName<DB>(std::marker::PhantomData<DB>);

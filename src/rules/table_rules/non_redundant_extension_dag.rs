@@ -24,12 +24,13 @@ use crate::{
 ///
 /// ```rust
 /// use sql_rules::prelude::*;
+/// use sqlparser::dialect::GenericDialect;
 ///
 /// let constrainer: GenericConstrainer<ParserDB> = NonRedundantExtensionDag::default().into();
 ///
 /// // Invalid: Duplicate direct extension to the same table B
 /// // The same primary key column (id) appears in two foreign keys to the same table
-/// let invalid_duplicate = ParserDB::try_from(
+/// let invalid_duplicate = ParserDB::parse::<GenericDialect>(
 ///     r#"
 /// CREATE TABLE table_b (id INT PRIMARY KEY);
 /// CREATE TABLE table_a (
@@ -44,7 +45,7 @@ use crate::{
 ///
 /// // Invalid: Redundant path (A -> B -> C and A -> C)
 /// // table_a's id references both table_b and table_c, but table_b already extends table_c
-/// let invalid_redundant = ParserDB::try_from(
+/// let invalid_redundant = ParserDB::parse::<GenericDialect>(
 ///     r#"
 /// CREATE TABLE table_c (id INT PRIMARY KEY);
 /// CREATE TABLE table_b (id INT PRIMARY KEY REFERENCES table_c(id));
@@ -60,7 +61,7 @@ use crate::{
 ///
 /// // Valid: Non-redundant DAG (A -> B -> C and A -> D -> C)
 /// // table_a's id references both table_b and table_d, which independently extend table_c
-/// let valid_dag = ParserDB::try_from(
+/// let valid_dag = ParserDB::parse::<GenericDialect>(
 ///     r#"
 /// CREATE TABLE table_c (id INT PRIMARY KEY);
 /// CREATE TABLE table_b (id INT PRIMARY KEY REFERENCES table_c(id));

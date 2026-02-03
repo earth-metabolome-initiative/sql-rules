@@ -19,11 +19,12 @@ use crate::{
 ///
 /// ```rust
 /// use sql_rules::prelude::*;
+/// use sqlparser::dialect::GenericDialect;
 ///
 /// let constrainer: GenericConstrainer<ParserDB> = NoTautologicalCheckRule::default().into();
 ///
 /// // Invalid: has tautological check constraint CHECK (true)
-/// let invalid_schema = ParserDB::try_from(
+/// let invalid_schema = ParserDB::parse::<GenericDialect>(
 ///     r#"CREATE TABLE my_table (
 ///         id INT PRIMARY KEY,
 ///         age INT CHECK (true)
@@ -33,7 +34,7 @@ use crate::{
 /// assert!(constrainer.validate_schema(&invalid_schema).is_err());
 ///
 /// // Invalid: has tautological check constraint CHECK (1 = 1)
-/// let invalid_schema2 = ParserDB::try_from(
+/// let invalid_schema2 = ParserDB::parse::<GenericDialect>(
 ///     r#"CREATE TABLE my_table (
 ///         id INT PRIMARY KEY,
 ///         age INT CHECK (1 = 1)
@@ -43,7 +44,7 @@ use crate::{
 /// assert!(constrainer.validate_schema(&invalid_schema2).is_err());
 ///
 /// // Valid: has meaningful check constraint
-/// let valid_schema = ParserDB::try_from(
+/// let valid_schema = ParserDB::parse::<GenericDialect>(
 ///     r#"CREATE TABLE my_table (
 ///         id INT PRIMARY KEY,
 ///         age INT CHECK (age > 0)

@@ -22,40 +22,41 @@ use crate::{
 ///
 /// ```rust
 /// use sql_rules::prelude::*;
+/// use sqlparser::dialect::GenericDialect;
 ///
 /// let constrainer: GenericConstrainer<ParserDB> = PluralTableName::default().into();
 ///
 /// // Invalid singular table names
-/// let invalid_schema = ParserDB::try_from("CREATE TABLE user (id INT);").unwrap();
+/// let invalid_schema = ParserDB::parse::<GenericDialect>("CREATE TABLE user (id INT);").unwrap();
 /// assert!(constrainer.validate_schema(&invalid_schema).is_err());
 ///
-/// let invalid_schema2 = ParserDB::try_from("CREATE TABLE user_account (id INT);").unwrap();
+/// let invalid_schema2 = ParserDB::parse::<GenericDialect>("CREATE TABLE user_account (id INT);").unwrap();
 /// assert!(constrainer.validate_schema(&invalid_schema2).is_err());
 ///
 /// // Valid plural table names
-/// let valid_schema = ParserDB::try_from("CREATE TABLE users (id INT);").unwrap();
+/// let valid_schema = ParserDB::parse::<GenericDialect>("CREATE TABLE users (id INT);").unwrap();
 /// assert!(constrainer.validate_schema(&valid_schema).is_ok());
 ///
-/// let valid_schema2 = ParserDB::try_from("CREATE TABLE user_accounts (id INT);").unwrap();
+/// let valid_schema2 = ParserDB::parse::<GenericDialect>("CREATE TABLE user_accounts (id INT);").unwrap();
 /// assert!(constrainer.validate_schema(&valid_schema2).is_ok());
 ///
 /// // Edge cases with Latin plurals
-/// let valid_spectra = ParserDB::try_from("CREATE TABLE spectra (id INT);").unwrap();
+/// let valid_spectra = ParserDB::parse::<GenericDialect>("CREATE TABLE spectra (id INT);").unwrap();
 /// assert!(constrainer.validate_schema(&valid_spectra).is_ok());
 ///
-/// let invalid_spectrum = ParserDB::try_from("CREATE TABLE spectrum (id INT);").unwrap();
+/// let invalid_spectrum = ParserDB::parse::<GenericDialect>("CREATE TABLE spectrum (id INT);").unwrap();
 /// assert!(constrainer.validate_schema(&invalid_spectrum).is_err());
 ///
-/// let valid_matrices = ParserDB::try_from("CREATE TABLE matrices (id INT);").unwrap();
+/// let valid_matrices = ParserDB::parse::<GenericDialect>("CREATE TABLE matrices (id INT);").unwrap();
 /// assert!(constrainer.validate_schema(&valid_matrices).is_ok());
 ///
-/// let invalid_matrix = ParserDB::try_from("CREATE TABLE matrix (id INT);").unwrap();
+/// let invalid_matrix = ParserDB::parse::<GenericDialect>("CREATE TABLE matrix (id INT);").unwrap();
 /// assert!(constrainer.validate_schema(&invalid_matrix).is_err());
 ///
-/// let valid_taxa = ParserDB::try_from("CREATE TABLE taxa (id INT);").unwrap();
+/// let valid_taxa = ParserDB::parse::<GenericDialect>("CREATE TABLE taxa (id INT);").unwrap();
 /// assert!(constrainer.validate_schema(&valid_taxa).is_ok());
 ///
-/// let invalid_taxon = ParserDB::try_from("CREATE TABLE taxon (id INT);").unwrap();
+/// let invalid_taxon = ParserDB::parse::<GenericDialect>("CREATE TABLE taxon (id INT);").unwrap();
 /// assert!(constrainer.validate_schema(&invalid_taxon).is_err());
 /// ```
 pub struct PluralTableName<DB>(std::marker::PhantomData<DB>);

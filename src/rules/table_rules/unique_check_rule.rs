@@ -18,16 +18,17 @@ use crate::{
 ///
 /// ```rust
 /// use sql_rules::prelude::*;
+/// use sqlparser::dialect::GenericDialect;
 ///
 /// let constrainer: GenericConstrainer<ParserDB> = UniqueCheckRule::default().into();
 ///
 /// let invalid_schema =
-///     ParserDB::try_from("CREATE TABLE MyTable (id INT, CHECK (id > 0), CHECK (id > 0));")
+///     ParserDB::parse::<GenericDialect>("CREATE TABLE MyTable (id INT, CHECK (id > 0), CHECK (id > 0));")
 ///         .unwrap();
 /// assert!(constrainer.validate_schema(&invalid_schema).is_err());
 ///
 /// let valid_schema =
-///     ParserDB::try_from("CREATE TABLE mytable (id INT, CHECK (id > 0));").unwrap();
+///     ParserDB::parse::<GenericDialect>("CREATE TABLE mytable (id INT, CHECK (id > 0));").unwrap();
 /// assert!(constrainer.validate_schema(&valid_schema).is_ok());
 /// ```
 pub struct UniqueCheckRule<DB>(std::marker::PhantomData<DB>);

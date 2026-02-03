@@ -15,15 +15,16 @@ use sql_traits::traits::{CheckConstraintLike, ColumnLike, DatabaseLike, TableLik
 ///
 /// ```rust
 /// use sql_rules::prelude::*;
+/// use sqlparser::dialect::GenericDialect;
 ///
 /// let constrainer: GenericConstrainer<ParserDB> = PastTimeColumnRule::default().into();
 ///
 /// // Invalid: created_at without constraint
-/// let invalid_schema = ParserDB::try_from("CREATE TABLE users (created_at TIMESTAMP);").unwrap();
+/// let invalid_schema = ParserDB::parse::<GenericDialect>("CREATE TABLE users (created_at TIMESTAMP);").unwrap();
 /// assert!(constrainer.validate_schema(&invalid_schema).is_err());
 ///
 /// // Valid: created_at with constraint
-/// let valid_schema = ParserDB::try_from("CREATE TABLE users (created_at TIMESTAMP CHECK (created_at <= NOW()));").unwrap();
+/// let valid_schema = ParserDB::parse::<GenericDialect>("CREATE TABLE users (created_at TIMESTAMP CHECK (created_at <= NOW()));").unwrap();
 /// assert!(constrainer.validate_schema(&valid_schema).is_ok());
 /// ```
 pub struct PastTimeColumnRule<DB>(std::marker::PhantomData<DB>);

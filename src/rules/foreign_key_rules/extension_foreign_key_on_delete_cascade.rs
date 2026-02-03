@@ -24,12 +24,13 @@ use crate::{
 ///
 /// ```rust
 /// use sql_rules::prelude::*;
+/// use sqlparser::dialect::GenericDialect;
 ///
 /// let constrainer: GenericConstrainer<ParserDB> =
 ///     ExtensionForeignKeyOnDeleteCascade::default().into();
 ///
 /// // Extension FK without ON DELETE CASCADE - should fail
-/// let invalid_schema = ParserDB::try_from(
+/// let invalid_schema = ParserDB::parse::<GenericDialect>(
 ///     r#"
 /// CREATE TABLE parent_table (id INT PRIMARY KEY);
 /// CREATE TABLE extension_table (
@@ -42,7 +43,7 @@ use crate::{
 /// assert!(constrainer.validate_schema(&invalid_schema).is_err());
 ///
 /// // Extension FK with ON DELETE CASCADE - should pass
-/// let valid_schema = ParserDB::try_from(
+/// let valid_schema = ParserDB::parse::<GenericDialect>(
 ///     r#"
 /// CREATE TABLE parent_table (id INT PRIMARY KEY);
 /// CREATE TABLE extension_table (
@@ -55,7 +56,7 @@ use crate::{
 /// assert!(constrainer.validate_schema(&valid_schema).is_ok());
 ///
 /// // Non-extension FK without ON DELETE CASCADE - should pass (not an extension FK)
-/// let valid_schema2 = ParserDB::try_from(
+/// let valid_schema2 = ParserDB::parse::<GenericDialect>(
 ///     r#"
 /// CREATE TABLE parent_table (id INT PRIMARY KEY);
 /// CREATE TABLE reference_table (

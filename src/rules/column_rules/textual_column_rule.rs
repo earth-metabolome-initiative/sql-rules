@@ -18,19 +18,20 @@ use sql_traits::traits::{CheckConstraintLike, ColumnLike, DatabaseLike, TableLik
 ///
 /// ```rust
 /// use sql_rules::prelude::*;
+/// use sqlparser::dialect::GenericDialect;
 ///
 /// let constrainer: GenericConstrainer<ParserDB> = TextualColumnRule::default().into();
 ///
 /// // Invalid: Textual column without constraints
-/// let invalid_schema = ParserDB::try_from("CREATE TABLE users (name TEXT);").unwrap();
+/// let invalid_schema = ParserDB::parse::<GenericDialect>("CREATE TABLE users (name TEXT);").unwrap();
 /// assert!(constrainer.validate_schema(&invalid_schema).is_err());
 ///
 /// // Invalid: Textual column with only not-empty constraint
-/// let invalid_schema2 = ParserDB::try_from("CREATE TABLE users (name TEXT CHECK (name <> ''));").unwrap();
+/// let invalid_schema2 = ParserDB::parse::<GenericDialect>("CREATE TABLE users (name TEXT CHECK (name <> ''));").unwrap();
 /// assert!(constrainer.validate_schema(&invalid_schema2).is_err());
 ///
 /// // Valid: Textual column with both constraints
-/// let valid_schema = ParserDB::try_from("CREATE TABLE users (name TEXT CHECK (name <> ''), CHECK (LENGTH(name) <= 255));").unwrap();
+/// let valid_schema = ParserDB::parse::<GenericDialect>("CREATE TABLE users (name TEXT CHECK (name <> ''), CHECK (LENGTH(name) <= 255));").unwrap();
 /// assert!(constrainer.validate_schema(&valid_schema).is_ok());
 /// ```
 pub struct TextualColumnRule<DB>(std::marker::PhantomData<DB>);
