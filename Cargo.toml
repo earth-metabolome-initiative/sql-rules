@@ -17,7 +17,7 @@ thiserror = "2.0"
 heck = "0.5"
 
 [dev-dependencies]
-sqlparser = { git = "https://github.com/LucaCappelletti94/sqlparser-rs", branch = "dialect-derives" }
+sqlparser = { git = "https://github.com/apache/datafusion-sqlparser-rs", branch = "main" }
 
 [lints.rust]
 missing_docs = "forbid"
