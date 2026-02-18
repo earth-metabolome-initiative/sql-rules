@@ -31,14 +31,14 @@ use crate::{
 /// // Invalid: Duplicate direct extension to the same table B
 /// // The same primary key column (id) appears in two foreign keys to the same table
 /// let invalid_duplicate = ParserDB::parse::<GenericDialect>(
-///     r#"
+///     "
 /// CREATE TABLE table_b (id INT PRIMARY KEY);
 /// CREATE TABLE table_a (
 ///     id INT PRIMARY KEY,
 ///     FOREIGN KEY (id) REFERENCES table_b(id),
 ///     FOREIGN KEY (id) REFERENCES table_b(id)
 /// );
-/// "#,
+/// ",
 /// )
 /// .unwrap();
 /// assert!(constrainer.validate_schema(&invalid_duplicate).is_err());
@@ -46,7 +46,7 @@ use crate::{
 /// // Invalid: Redundant path (A -> B -> C and A -> C)
 /// // table_a's id references both table_b and table_c, but table_b already extends table_c
 /// let invalid_redundant = ParserDB::parse::<GenericDialect>(
-///     r#"
+///     "
 /// CREATE TABLE table_c (id INT PRIMARY KEY);
 /// CREATE TABLE table_b (id INT PRIMARY KEY REFERENCES table_c(id));
 /// CREATE TABLE table_a (
@@ -54,7 +54,7 @@ use crate::{
 ///     FOREIGN KEY (id) REFERENCES table_b(id),
 ///     FOREIGN KEY (id) REFERENCES table_c(id)
 /// );
-/// "#,
+/// ",
 /// )
 /// .unwrap();
 /// assert!(constrainer.validate_schema(&invalid_redundant).is_err());
@@ -62,7 +62,7 @@ use crate::{
 /// // Valid: Non-redundant DAG (A -> B -> C and A -> D -> C)
 /// // table_a's id references both table_b and table_d, which independently extend table_c
 /// let valid_dag = ParserDB::parse::<GenericDialect>(
-///     r#"
+///     "
 /// CREATE TABLE table_c (id INT PRIMARY KEY);
 /// CREATE TABLE table_b (id INT PRIMARY KEY REFERENCES table_c(id));
 /// CREATE TABLE table_d (id INT PRIMARY KEY REFERENCES table_c(id));
@@ -71,7 +71,7 @@ use crate::{
 ///     FOREIGN KEY (id) REFERENCES table_b(id),
 ///     FOREIGN KEY (id) REFERENCES table_d(id)
 /// );
-/// "#,
+/// ",
 /// )
 /// .unwrap();
 /// assert!(constrainer.validate_schema(&valid_dag).is_ok());

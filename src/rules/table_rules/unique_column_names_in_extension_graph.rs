@@ -28,59 +28,59 @@ use crate::{
 ///
 /// // Invalid: child_table has 'name' column, which also exists in parent_table
 /// let invalid_schema = ParserDB::parse::<GenericDialect>(
-///     r#"
+///     "
 /// CREATE TABLE parent_table (id INT PRIMARY KEY, name TEXT);
 /// CREATE TABLE child_table (
 ///     id INT PRIMARY KEY,
 ///     name TEXT,
 ///     FOREIGN KEY (id) REFERENCES parent_table(id)
 /// );
-/// "#,
+/// ",
 /// )
 /// .unwrap();
 /// assert!(constrainer.validate_schema(&invalid_schema).is_err());
 ///
 /// // Valid: child_table has unique column names
 /// let valid_schema = ParserDB::parse::<GenericDialect>(
-///     r#"
+///     "
 /// CREATE TABLE parent_table (id INT PRIMARY KEY, name TEXT);
 /// CREATE TABLE child_table (
 ///     id INT PRIMARY KEY,
 ///     description TEXT,
 ///     FOREIGN KEY (id) REFERENCES parent_table(id)
 /// );
-/// "#,
+/// ",
 /// )
 /// .unwrap();
 /// assert!(constrainer.validate_schema(&valid_schema).is_ok());
 ///
 /// // Valid: non-extension tables can have any column names
 /// let valid_non_extension = ParserDB::parse::<GenericDialect>(
-///     r#"
+///     "
 /// CREATE TABLE table1 (id INT PRIMARY KEY, name TEXT);
 /// CREATE TABLE table2 (id INT PRIMARY KEY, name TEXT);
-/// "#,
+/// ",
 /// )
 /// .unwrap();
 /// assert!(constrainer.validate_schema(&valid_non_extension).is_ok());
 ///
 /// // Valid: primary key column (id) can be shared in extension
 /// let valid_shared_pk = ParserDB::parse::<GenericDialect>(
-///     r#"
+///     "
 /// CREATE TABLE parent_table (id INT PRIMARY KEY, name TEXT);
 /// CREATE TABLE child_table (
 ///     id INT PRIMARY KEY,
 ///     value INT,
 ///     FOREIGN KEY (id) REFERENCES parent_table(id)
 /// );
-/// "#,
+/// ",
 /// )
 /// .unwrap();
 /// assert!(constrainer.validate_schema(&valid_shared_pk).is_ok());
 ///
 /// // Invalid: transitive extension - grandchild cannot have column from grandparent
 /// let invalid_transitive = ParserDB::parse::<GenericDialect>(
-///     r#"
+///     "
 /// CREATE TABLE grandparent_table (id INT PRIMARY KEY, name TEXT);
 /// CREATE TABLE parent_table (
 ///     id INT PRIMARY KEY,
@@ -92,7 +92,7 @@ use crate::{
 ///     name TEXT,
 ///     FOREIGN KEY (id) REFERENCES parent_table(id)
 /// );
-/// "#,
+/// ",
 /// )
 /// .unwrap();
 /// assert!(constrainer.validate_schema(&invalid_transitive).is_err());

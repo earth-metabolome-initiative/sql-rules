@@ -24,37 +24,37 @@ use sql_traits::traits::{ColumnLike, DatabaseLike, ForeignKeyLike, TableLike};
 /// let constrainer: GenericConstrainer<ParserDB> = ReferencesUniqueIndex::default().into();
 ///
 /// let invalid_schema = ParserDB::parse::<GenericDialect>(
-///     r#"
+///     "
 /// CREATE TABLE parent (id INT, name TEXT);
 /// CREATE TABLE child (id INT, FOREIGN KEY (id) REFERENCES parent (id));
-/// "#,
+/// ",
 /// )
 /// .unwrap();
 /// assert!(constrainer.validate_schema(&invalid_schema).is_err());
 ///
 /// let valid_schema_primary_key = ParserDB::parse::<GenericDialect>(
-///     r#"
+///     "
 /// CREATE TABLE parent (id INT PRIMARY KEY);
 /// CREATE TABLE child (id INT, FOREIGN KEY (id) REFERENCES parent (id));
-/// "#,
+/// ",
 /// )
 /// .unwrap();
 /// assert!(constrainer.validate_schema(&valid_schema_primary_key).is_ok());
 ///
 /// let valid_schema_unique = ParserDB::parse::<GenericDialect>(
-///     r#"
+///     "
 /// CREATE TABLE parent (id INT UNIQUE);
 /// CREATE TABLE child (id INT, FOREIGN KEY (id) REFERENCES parent (id));
-/// "#,
+/// ",
 /// )
 /// .unwrap();
 /// assert!(constrainer.validate_schema(&valid_schema_unique).is_ok());
 ///
 /// let valid_schema_composite = ParserDB::parse::<GenericDialect>(
-///     r#"
+///     "
 /// CREATE TABLE parent (id INT, code TEXT, UNIQUE (id, code));
 /// CREATE TABLE child (id INT, code TEXT, FOREIGN KEY (id, code) REFERENCES parent (id, code));
-/// "#,
+/// ",
 /// )
 /// .unwrap();
 /// assert!(constrainer.validate_schema(&valid_schema_composite).is_ok());

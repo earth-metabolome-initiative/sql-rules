@@ -25,38 +25,38 @@ use crate::{
 /// let constrainer: GenericConstrainer<ParserDB> = PrimaryKeyReferenceEndsWithId::default().into();
 ///
 /// let invalid_schema = ParserDB::parse::<GenericDialect>(
-///     r#"
+///     "
 /// CREATE TABLE parent (id INT PRIMARY KEY);
 /// CREATE TABLE child (parent_key INT, FOREIGN KEY (parent_key) REFERENCES parent (id));
-/// "#,
+/// ",
 /// )
 /// .unwrap();
 /// assert!(constrainer.validate_schema(&invalid_schema).is_err());
 ///
 /// let valid_schema_direct = ParserDB::parse::<GenericDialect>(
-///     r#"
+///     "
 /// CREATE TABLE parent (id INT PRIMARY KEY);
 /// CREATE TABLE child (parent_id INT, FOREIGN KEY (parent_id) REFERENCES parent (id));
-/// "#,
+/// ",
 /// )
 /// .unwrap();
 /// assert!(constrainer.validate_schema(&valid_schema_direct).is_ok());
 ///
 /// let valid_schema_indirect = ParserDB::parse::<GenericDialect>(
-///     r#"
+///     "
 /// CREATE TABLE grandparent (id INT PRIMARY KEY);
 /// CREATE TABLE parent (gp_id INT, FOREIGN KEY (gp_id) REFERENCES grandparent (id));
 /// CREATE TABLE child (parent_id INT, FOREIGN KEY (parent_id) REFERENCES parent (gp_id));
-/// "#,
+/// ",
 /// )
 /// .unwrap();
 /// assert!(constrainer.validate_schema(&valid_schema_indirect).is_ok());
 ///
 /// let valid_schema_non_pk = ParserDB::parse::<GenericDialect>(
-///     r#"
+///     "
 /// CREATE TABLE parent (id INT PRIMARY KEY, code TEXT UNIQUE);
 /// CREATE TABLE child (parent_code TEXT, FOREIGN KEY (parent_code) REFERENCES parent (code));
-/// "#,
+/// ",
 /// )
 /// .unwrap();
 /// assert!(constrainer.validate_schema(&valid_schema_non_pk).is_ok());

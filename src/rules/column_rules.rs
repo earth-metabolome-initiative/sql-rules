@@ -6,6 +6,8 @@ mod no_rust_keyword_column_name;
 pub use no_rust_keyword_column_name::NoRustKeywordColumnName;
 mod non_composite_primary_key_named_id;
 pub use non_composite_primary_key_named_id::NonCompositePrimaryKeyNamedId;
+mod no_surrogate_primary_key_in_extension;
+pub use no_surrogate_primary_key_in_extension::NoSurrogatePrimaryKeyInExtension;
 mod snake_case_column_name;
 pub use snake_case_column_name::SnakeCaseColumnName;
 mod singular_column_name;

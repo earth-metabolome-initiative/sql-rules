@@ -31,40 +31,40 @@ use crate::{
 ///
 /// // Extension FK without ON DELETE CASCADE - should fail
 /// let invalid_schema = ParserDB::parse::<GenericDialect>(
-///     r#"
+///     "
 /// CREATE TABLE parent_table (id INT PRIMARY KEY);
 /// CREATE TABLE extension_table (
 ///     id INT PRIMARY KEY,
 ///     FOREIGN KEY (id) REFERENCES parent_table(id)
 /// );
-/// "#,
+/// ",
 /// )
 /// .unwrap();
 /// assert!(constrainer.validate_schema(&invalid_schema).is_err());
 ///
 /// // Extension FK with ON DELETE CASCADE - should pass
 /// let valid_schema = ParserDB::parse::<GenericDialect>(
-///     r#"
+///     "
 /// CREATE TABLE parent_table (id INT PRIMARY KEY);
 /// CREATE TABLE extension_table (
 ///     id INT PRIMARY KEY,
 ///     FOREIGN KEY (id) REFERENCES parent_table(id) ON DELETE CASCADE
 /// );
-/// "#,
+/// ",
 /// )
 /// .unwrap();
 /// assert!(constrainer.validate_schema(&valid_schema).is_ok());
 ///
 /// // Non-extension FK without ON DELETE CASCADE - should pass (not an extension FK)
 /// let valid_schema2 = ParserDB::parse::<GenericDialect>(
-///     r#"
+///     "
 /// CREATE TABLE parent_table (id INT PRIMARY KEY);
 /// CREATE TABLE reference_table (
 ///     id INT PRIMARY KEY,
 ///     parent_id INT,
 ///     FOREIGN KEY (parent_id) REFERENCES parent_table(id)
 /// );
-/// "#,
+/// ",
 /// )
 /// .unwrap();
 /// assert!(constrainer.validate_schema(&valid_schema2).is_ok());

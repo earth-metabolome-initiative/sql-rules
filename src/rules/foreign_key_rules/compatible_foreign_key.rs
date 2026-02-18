@@ -28,16 +28,16 @@ use crate::{
 /// let constrainer: GenericConstrainer<ParserDB> = CompatibleForeignKey::default().into();
 ///
 /// let invalid_data_type = ParserDB::parse::<GenericDialect>(
-///     r#"
+///     "
 /// CREATE TABLE mytable (id INT PRIMARY KEY);
 /// CREATE TABLE othertable (id SMALLINT, CONSTRAINT fk FOREIGN KEY (id) REFERENCES mytable (id));
-/// "#,
+/// ",
 /// )
 /// .unwrap();
 /// assert!(constrainer.validate_schema(&invalid_data_type).is_err());
 ///
 /// let extension_dag = ParserDB::parse::<GenericDialect>(
-///     r#"
+///     "
 /// CREATE TABLE root (id SERIAL PRIMARY KEY);
 /// CREATE TABLE left_root (id INT PRIMARY KEY REFERENCES root (id));
 /// CREATE TABLE right_root (id INT PRIMARY KEY REFERENCES root (id));
@@ -49,17 +49,17 @@ use crate::{
 ///     FOREIGN KEY (other_id) REFERENCES left_child (id),
 ///     FOREIGN KEY (other_id) REFERENCES right_child (id)
 /// );
-/// "#,
+/// ",
 /// )
 /// .unwrap();
 /// assert!(constrainer.validate_schema(&extension_dag).is_ok());
 ///
 /// let valid_schema2 = ParserDB::parse::<GenericDialect>(
-///     r#"
+///     "
 /// CREATE TABLE root (id INT PRIMARY KEY);
 /// CREATE TABLE child (id INT PRIMARY KEY REFERENCES root (id));
 /// CREATE TABLE mytable (id INT PRIMARY KEY, other_id INT REFERENCES child (id));
-/// "#,
+/// ",
 /// )
 /// .unwrap();
 ///

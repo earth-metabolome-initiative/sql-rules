@@ -10,9 +10,9 @@ use crate::{
     },
     rules::{
         CompatibleForeignKey, HasPrimaryKey, LowercaseColumnName, LowercaseForeignKeyName,
-        LowercaseTableName, NoForbiddenColumnInExtension, NonCompositePrimaryKeyNamedId,
-        NonRedundantExtensionDag, PastTimeColumnRule, PluralTableName,
-        PoliciesRequireRowLevelSecurity, SingularColumnName, SnakeCaseColumnName,
+        LowercaseTableName, NoForbiddenColumnInExtension, NoSurrogatePrimaryKeyInExtension,
+        NonCompositePrimaryKeyNamedId, NonRedundantExtensionDag, PastTimeColumnRule,
+        PluralTableName, PoliciesRequireRowLevelSecurity, SingularColumnName, SnakeCaseColumnName,
         SnakeCaseTableName, TextualColumnRule, UniqueCheckRule, UniqueColumnNamesInExtensionGraph,
         UniqueForeignKey, UniqueUniqueIndex,
     },
@@ -47,6 +47,8 @@ use crate::{
 /// - [`LowercaseColumnName`]: Ensures column names are lowercase
 /// - [`NonCompositePrimaryKeyNamedId`]: Ensures non-composite primary keys are
 ///   named "id"
+/// - [`NoSurrogatePrimaryKeyInExtension`]: Ensures extension-table primary
+///   keys are not surrogate
 /// - [`SnakeCaseColumnName`]: Ensures column names follow `snake_case`
 ///   convention
 /// - [`SingularColumnName`]: Ensures column names are singular
@@ -98,6 +100,7 @@ where
         // Register all column constraints
         constrainer.register_column_rule(Box::new(LowercaseColumnName::default()));
         constrainer.register_column_rule(Box::new(NonCompositePrimaryKeyNamedId::default()));
+        constrainer.register_column_rule(Box::new(NoSurrogatePrimaryKeyInExtension::default()));
         constrainer.register_column_rule(Box::new(SnakeCaseColumnName::default()));
         constrainer.register_column_rule(Box::new(SingularColumnName::default()));
         constrainer.register_column_rule(Box::new(NoRustKeywordColumnName::default()));

@@ -25,30 +25,30 @@ use crate::{
 ///
 /// // Invalid: has negation check constraint CHECK (false)
 /// let invalid_schema = ParserDB::parse::<GenericDialect>(
-///     r#"CREATE TABLE my_table (
+///     "CREATE TABLE my_table (
 ///         id INT PRIMARY KEY,
 ///         age INT CHECK (false)
-///     );"#,
+///     );",
 /// )
 /// .unwrap();
 /// assert!(constrainer.validate_schema(&invalid_schema).is_err());
 ///
 /// // Invalid: has negation check constraint CHECK (1 = 0)
 /// let invalid_schema2 = ParserDB::parse::<GenericDialect>(
-///     r#"CREATE TABLE my_table (
+///     "CREATE TABLE my_table (
 ///         id INT PRIMARY KEY,
 ///         age INT CHECK (1 = 0)
-///     );"#,
+///     );",
 /// )
 /// .unwrap();
 /// assert!(constrainer.validate_schema(&invalid_schema2).is_err());
 ///
 /// // Valid: has meaningful check constraint
 /// let valid_schema = ParserDB::parse::<GenericDialect>(
-///     r#"CREATE TABLE my_table (
+///     "CREATE TABLE my_table (
 ///         id INT PRIMARY KEY,
 ///         age INT CHECK (age > 0)
-///     );"#,
+///     );",
 /// )
 /// .unwrap();
 /// assert!(constrainer.validate_schema(&valid_schema).is_ok());

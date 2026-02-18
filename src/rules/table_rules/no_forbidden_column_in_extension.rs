@@ -25,27 +25,27 @@ use crate::{
 /// let constrainer: GenericConstrainer<ParserDB> = NoForbiddenColumnInExtension::default().into();
 ///
 /// let invalid_schema = ParserDB::parse::<GenericDialect>(
-///     r#"
+///     "
 /// CREATE TABLE parent_table (id INT PRIMARY KEY, name TEXT);
 /// CREATE TABLE child_table (
 ///     id INT PRIMARY KEY,
 ///     extension TEXT,
 ///     FOREIGN KEY (id) REFERENCES parent_table(id)
 /// );
-/// "#,
+/// ",
 /// )
 /// .unwrap();
 /// assert!(constrainer.validate_schema(&invalid_schema).is_err());
 ///
 /// let valid_schema = ParserDB::parse::<GenericDialect>(
-///     r#"
+///     "
 /// CREATE TABLE parent_table (id INT PRIMARY KEY, name TEXT);
 /// CREATE TABLE child_table (
 ///     id INT PRIMARY KEY,
 ///     data TEXT,
 ///     FOREIGN KEY (id) REFERENCES parent_table(id)
 /// );
-/// "#,
+/// ",
 /// )
 /// .unwrap();
 /// assert!(constrainer.validate_schema(&valid_schema).is_ok());
@@ -60,14 +60,14 @@ use crate::{
 ///     NoForbiddenColumnInExtension::new("custom_forbidden").into();
 ///
 /// let invalid_custom_schema = ParserDB::parse::<GenericDialect>(
-///     r#"
+///     "
 /// CREATE TABLE parent_table (id INT PRIMARY KEY, name TEXT);
 /// CREATE TABLE child_table (
 ///     id INT PRIMARY KEY,
 ///     custom_forbidden TEXT,
 ///     FOREIGN KEY (id) REFERENCES parent_table(id)
 /// );
-/// "#,
+/// ",
 /// )
 /// .unwrap();
 /// assert!(custom_constrainer.validate_schema(&invalid_custom_schema).is_err());
