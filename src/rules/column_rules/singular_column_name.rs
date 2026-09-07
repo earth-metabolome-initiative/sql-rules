@@ -97,7 +97,7 @@ impl<DB: DatabaseLike> ColumnRule for SingularColumnName<DB> {
             let table_name = table.table_name();
             let expected_name = if column_name.contains('_') {
                 let prefix = &column_name[..column_name.rfind('_').unwrap()];
-                format!("{}_{}", prefix, &singularized)
+                format!("{prefix}_{singularized}")
             } else {
                 singularized.clone()
             };

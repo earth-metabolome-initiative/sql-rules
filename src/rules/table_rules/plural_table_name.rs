@@ -96,7 +96,7 @@ impl<DB: DatabaseLike> TableRule for PluralTableName<DB> {
             let expected_plural = pluralized;
             let expected_name = if table_name.contains('_') {
                 let prefix = &table_name[..table_name.rfind('_').unwrap()];
-                format!("{}_{}", prefix, &expected_plural)
+                format!("{prefix}_{expected_plural}")
             } else {
                 expected_plural.clone()
             };
